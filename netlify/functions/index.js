@@ -1,8 +1,10 @@
-const { PythonShell } = require("python-shell");
+const { PythonShell } = require('python-shell')
 
 exports.handler = async function (event, context) {
   return {
     statusCode: 200,
-    body: JSON.stringify(event, null, 2),
+    body: await PythonShell.run('subcvt-mannix.py', {
+      args: [event.rawUrl]
+    })
   }
 }
