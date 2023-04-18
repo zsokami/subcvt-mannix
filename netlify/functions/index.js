@@ -1,3 +1,5 @@
+const { PythonShell } = require("python-shell");
+
 exports.handler = async function (event, context) {
   return {
     statusCode: 200,
