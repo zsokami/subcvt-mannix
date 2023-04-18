@@ -1,13 +1,9 @@
-from flask import Flask, request
+import requests
+from flask import Flask
+
+app = Flask(__name__)
 
 
-def create_app():
-    app = Flask(__name__)
-
-    @app.route('/')
-    def hello_world():
-        a = int(request.args.get('a', 0))
-        b = int(request.args.get('b', 0))
-        return f'Hello, World! {a+b}'
-
-    return app
+@app.route('/hello_world/')
+def hello_world():
+    return ';Hello, World!\n' + requests.get('https://dd.al/config').text
