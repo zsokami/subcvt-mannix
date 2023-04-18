@@ -1,11 +1,8 @@
-const { PythonShell } = require('python-shell')
+const axios = require('axios')
 
 exports.handler = async function (event, context) {
   return {
     statusCode: 200,
-    body: await PythonShell.run('subcvt-mannix.py', {
-      pythonPath: 'python',
-      args: [event.rawUrl]
-    })
+    body: `;${event.rawUrl}\n${(await axios.get('https://dd.al/config')).data}`
   }
 }
