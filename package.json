@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "axios": "*",
-    "js-yaml": "*"
+    "axios": "*"
   }
 }
