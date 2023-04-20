@@ -33,5 +33,5 @@ exports.handler = async function ({ rawUrl }) {
 
 function remove_redundant_groups (clash) {
   const doc = YAML.parseDocument(clash, { version: '1.1' })
-  return doc.toString({ lineWidth: 0, indentSeq: false })
+  return doc.toString({ lineWidth: 0, indentSeq: false, flowCollectionPadding: false })
 }
