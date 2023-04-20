@@ -10,7 +10,8 @@ exports.handler = async () => {
     'cwd': path.resolve(),
     'ls cwd': await fs.readdir('.').catch(e => e),
     '__dirname/..': path.dirname(__dirname),
-    'ls __dirname/..': await fs.readdir(path.dirname(__dirname)).catch(e => e)
+    'ls __dirname/..': await fs.readdir(path.dirname(__dirname)).catch(e => e),
+    'ls /': await fs.readdir('/').catch(e => e)
   }
 
   return {
