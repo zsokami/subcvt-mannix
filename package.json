@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "axios": "*"
+    "axios": "*",
+    "yaml": "*"
   }
 }
