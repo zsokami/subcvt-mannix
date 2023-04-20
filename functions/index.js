@@ -2,6 +2,8 @@ const { URL } = require('url')
 const axios = require('axios')
 const YAML = require('yaml')
 
+Object.getPrototypeOf(YAML.YAMLMap).maxFlowStringSingleLineLength = Infinity
+
 exports.handler = async function ({ rawUrl }) {
   const url = new URL(rawUrl)
   const path = url.pathname.split('/')
@@ -31,5 +33,5 @@ exports.handler = async function ({ rawUrl }) {
 
 function remove_redundant_groups (clash) {
   const doc = YAML.parseDocument(clash, { version: '1.1' })
-  return doc.toString({ lineWidth: 0 })
+  return doc.toString({ lineWidth: 0, indentSeq: false })
 }
