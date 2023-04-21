@@ -1,37 +1,110 @@
+const SUBCONVERTERS = [
+  'api.suda-cdn.com',
+  'api.dler.io',
+  'api.subcloud.xyz',
+  'api.nexconvert.com',
+  'api.subcsub.com',
+  'limbopro.cyou'
+]
+
 const { URL } = require('url')
 const axios = require('axios')
 const YAML = require('yaml')
 
 Object.getPrototypeOf(YAML.YAMLMap).maxFlowStringSingleLineLength = Infinity
 
-exports.handler = async function ({ rawUrl }) {
-  const url = new URL(rawUrl)
-  const path = url.pathname.split('/')
-  if (path[1].includes('.')) {
-    url.host = path.splice(1, 1)[0]
-    url.pathname = path.join('/')
-  } else {
-    url.host = 'api.dler.io'
-  }
-  if (!path[1]) {
-    url.pathname = 'sub'
-  }
-  let { data } = await axios.get(url)
-  if (
-    url.pathname == '/sub' &&
-    url.searchParams.get('target') == 'clash' &&
-    url.searchParams.get('list') != 'true' &&
-    url.searchParams.get('expand') != 'false'
-  ) {
-    data = remove_redundant_groups(data)
-  }
-  return {
-    statusCode: 200,
-    body: data
+exports.handler = async function ({ rawUrl, headers: reqHeaders }) {
+  try {
+    const url = new URL(rawUrl)
+    const path = url.pathname.split('/')
+    if (path[1].includes('.')) {
+      url.host = path.splice(1, 1)[0]
+      url.pathname = path.join('/')
+    } else {
+      url.host = SUBCONVERTERS[(Math.random() * SUBCONVERTERS.length) | 0]
+    }
+    if (!path[1]) {
+      url.pathname = 'sub'
+    }
+    let { status, headers, data } = await axios.get(url, {
+      headers: reqHeaders
+    })
+    if (
+      url.pathname == '/sub' &&
+      url.searchParams.get('target') == 'clash' &&
+      url.searchParams.get('list') != 'true' &&
+      url.searchParams.get('expand') != 'false'
+    ) {
+      data = remove_redundant_groups(data)
+    }
+    return {
+      statusCode: status,
+      headers,
+      body: data
+    }
+  } catch (e) {
+    const r = e?.response
+    return r
+      ? {
+          statusCode: r.status,
+          headers: r.headers,
+          body: r.data
+        }
+      : {
+          statusCode: e instanceof SCError ? 400 : 500,
+          body: String(e)
+        }
   }
 }
 
 function remove_redundant_groups (clash) {
-  const doc = YAML.parseDocument(clash, { version: '1.1' })
-  return doc.toString({ lineWidth: 0, indentSeq: false, flowCollectionPadding: false })
+  const y = YAML.parseDocument(clash, { version: '1.1' })
+  const gs = y.get('proxy-groups')?.items
+  if (gs) {
+    const name_g_pairs = gs.map(g => [g.get('name'), g])
+    const name_to_g = Object.fromEntries(name_g_pairs)
+    const names = name_g_pairs.map(([name]) => name)
+    const vis = {}
+    ;(function dfs (names) {
+      let i = 0
+      for (const name of names) {
+        const name_v = name.value ?? name
+        const g = name_to_g[name_v]
+        if (g != null) {
+          if (!(name_v in vis)) {
+            vis[name_v] = -1
+            vis[name_v] = dfs(g.get('proxies').items)
+          } else if (vis[name_v] == -1) {
+            throw SCError(`循环引用 ${name_v}`)
+          }
+          if (!vis[name_v]) continue
+        }
+        names[i++] = name
+      }
+      names.splice(i)
+      return i > 1 || (i == 1 && names[0].value != 'DIRECT')
+    })(names)
+
+    if (names.length < gs.length) {
+      names.forEach((name, i) => (gs[i] = name_to_g[name]))
+      gs.splice(names.length)
+      const rules = y.get('rules')?.items
+      if (rules) {
+        for (const rule of rules) {
+          const parts = rule.value.split(',')
+          if (vis[parts[2]] === false) {
+            parts[2] = 'DIRECT'
+            rule.value = parts.join(',')
+          }
+        }
+      }
+    }
+  }
+  return y.toString({
+    lineWidth: 0,
+    indentSeq: false,
+    flowCollectionPadding: false
+  })
 }
+
+class SCError extends Error {}
