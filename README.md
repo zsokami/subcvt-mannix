@@ -4,7 +4,7 @@
 
 默认 /sub 路径，默认转为 clash 订阅
 
-- `https://dd.al/scm?url={原订阅链接}`（短链）
+- `https://dd.al/scm?url={原订阅链接}`（短链，不支持指定后端和路径）
 - `https://sc-mannix.netlify.app?url={原订阅链接}`（随机后端 + 默认配置 + 默认参数）
 - `https://sc-mannix.netlify.app/api.v1.mk?url={原订阅链接}`（指定后端）
 - `https://sc-mannix.netlify.app/version`（指定路径）
