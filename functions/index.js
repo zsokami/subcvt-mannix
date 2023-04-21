@@ -7,6 +7,14 @@ const SUBCONVERTERS = [
   'limbopro.cyou'
 ]
 
+const DEFAULT_SEARCH_PARAMS = [
+  ['target', 'clash'],
+  ['udp', 'true'],
+  ['scv', 'true'],
+  ['config', 'https://raw.githubusercontent.com/zsokami/ACL4SSR/main/ACL4SSR_Online_Full_Mannix.ini'],
+  ['url', 'https://raw.githubusercontent.com/zsokami/sub/main/trials_providers/All.yaml']
+]
+
 const { URL } = require('url')
 const axios = require('axios')
 const YAML = require('yaml')
@@ -23,9 +31,10 @@ exports.handler = async function ({ rawUrl, headers: { 'user-agent': ua } }) {
     } else {
       url.host = SUBCONVERTERS[(Math.random() * SUBCONVERTERS.length) | 0]
     }
-    if (!path[1]) {
-      url.pathname = 'sub'
-    }
+    if (!path[1]) url.pathname = 'sub'
+    if (url.pathname == '/sub')
+      for (const [k, v] in DEFAULT_SEARCH_PARAMS)
+        if (!url.searchParams.has(k)) url.searchParams.set(k, v)
     let { status, headers, data } = await axios.get(url, {
       headers: { 'user-agent': ua }
     })
