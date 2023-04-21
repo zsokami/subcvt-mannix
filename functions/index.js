@@ -35,10 +35,7 @@ exports.handler = async function ({ rawUrl, headers: { 'user-agent': ua } }) {
     if (url.pathname == '/sub')
       for (const [k, v] of DEFAULT_SEARCH_PARAMS)
         if (!url.searchParams.has(k)) url.searchParams.set(k, v)
-    return {
-      statusCode: 200,
-      body: url
-    }
+    url.search = url.search.replace(/%2F/gi, '/')
     let { status, headers, data } = await axios.get(url, {
       headers: { 'user-agent': ua }
     })
