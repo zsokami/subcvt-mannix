@@ -13,7 +13,7 @@ const YAML = require('yaml')
 
 Object.getPrototypeOf(YAML.YAMLMap).maxFlowStringSingleLineLength = Infinity
 
-exports.handler = async function ({ rawUrl, headers: reqHeaders }) {
+exports.handler = async function ({ rawUrl, headers: { 'user-agent': ua } }) {
   try {
     const url = new URL(rawUrl)
     const path = url.pathname.split('/')
@@ -27,7 +27,7 @@ exports.handler = async function ({ rawUrl, headers: reqHeaders }) {
       url.pathname = 'sub'
     }
     let { status, headers, data } = await axios.get(url, {
-      headers: reqHeaders
+      headers: { 'user-agent': ua }
     })
     if (
       url.pathname == '/sub' &&
