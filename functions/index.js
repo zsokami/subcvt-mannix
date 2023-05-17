@@ -85,7 +85,7 @@ function remove_redundant_groups (clash) {
             vis[name_v] = -1
             vis[name_v] = dfs(g.get('proxies').items)
           } else if (vis[name_v] == -1) {
-            throw SCError(`循环引用 ${name_v}`)
+            throw new SCError(`循环引用 ${name_v}`)
           }
           if (!vis[name_v]) continue
         }
