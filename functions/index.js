@@ -2,7 +2,6 @@ const SUBCONVERTERS = [
   'api.suda-cdn.com',
   'api.dler.io',
   'api.nexconvert.com',
-  'api.subcsub.com',
   'limbopro.cyou'
 ]
 
