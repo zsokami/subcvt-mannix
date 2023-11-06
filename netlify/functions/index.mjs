@@ -113,6 +113,7 @@ export default async (req, context) => {
     ) {
       data = remove_redundant_groups(data)
     }
+    delete headers['Content-Encoding']
     return new Response(brotliCompressSync(data), { status, headers })
   } catch (e) {
     const response = e?.response
