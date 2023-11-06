@@ -1,4 +1,5 @@
 import { URL } from 'url'
+import { brotliCompressSync } from 'zlib'
 import axios from 'axios'
 import YAML from 'yaml'
 
@@ -112,7 +113,7 @@ export default async (req, context) => {
     ) {
       data = remove_redundant_groups(data)
     }
-    return new Response(data, { status, headers })
+    return new Response(brotliCompressSync(data), { status, headers })
   } catch (e) {
     const response = e?.response
     if (response) {
