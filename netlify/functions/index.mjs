@@ -113,10 +113,10 @@ export default async (req, context) => {
     ) {
       data = remove_redundant_groups(data)
     }
-    console.log('axios config: ', config)
-    console.log('axios request: ', request)
-    console.log('axios response headers: ', headers)
-    delete headers['Content-Encoding']
+    // console.log('axios config: ', config)
+    // console.log('axios request: ', request)
+    // console.log('axios response headers: ', headers)
+    headers['Content-Encoding'] = 'br'
     return new Response(brotliCompressSync(data), { status, headers })
   } catch (e) {
     const response = e?.response
