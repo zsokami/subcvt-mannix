@@ -116,8 +116,7 @@ export default async (req, context) => {
     // console.log('axios config: ', config)
     // console.log('axios request: ', request)
     // console.log('axios response headers: ', headers)
-    headers['Content-Encoding'] = 'br'
-    return new Response(brotliCompressSync(data), { status, headers })
+    return new Response(brotliCompressSync(data), { status, headers: { 'Content-Encoding': 'br', 'br': 1 } })
   } catch (e) {
     const response = e?.response
     if (response) {
