@@ -101,7 +101,7 @@ export default async (req, context) => {
       for (const [k, v] of DEFAULT_SEARCH_PARAMS)
         if (!url.searchParams.get(k)) url.searchParams.set(k, await v())
     url.search = url.search.replace(/%2F/gi, '/')
-    let { status, headers, data, config, request } = await axios.get(url, { headers: req.headers })
+    let { status, headers, data, config, request } = await axios.get(url, { headers: Object.fromEntries(req.headers) })
     if (
       url.pathname == '/sub' &&
       url.searchParams.get('target') == 'clash' &&
