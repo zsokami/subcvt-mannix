@@ -117,7 +117,7 @@ export default async (req, context) => {
     const response = e?.response
     if (response) {
       const { status, headers, data } = response
-      return new Response(data, { status, headers })
+      return new Response(e.toJSON(), { status, headers })
     }
     return new Response(String(e), { status: e instanceof SCError ? 400 : 500 })
   }
