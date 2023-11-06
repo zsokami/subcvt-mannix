@@ -11,7 +11,7 @@ const SUBCONVERTERS = [
 
 const GITHUB_REPOS_API = axios.create({
   baseURL: 'https://api.github.com/repos/',
-  headers: { 'Authorization': 'Bearer ' + Netlify.env.get('GITHUB_REPOS_API_KEY') }
+  headers: { 'Authorization': 'Bearer ' + process.env.GITHUB_REPOS_API_KEY }
 })
 
 async function raw_url(repo, branch_or_tag, path) {
