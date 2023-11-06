@@ -102,7 +102,7 @@ export default async (req, context) => {
       for (const [k, v] of DEFAULT_SEARCH_PARAMS)
         if (!url.searchParams.get(k)) url.searchParams.set(k, await v())
     url.search = url.search.replace(/%2F/gi, '/')
-    let { status, headers, data } = await axios.get(url, {
+    let { status, headers, data, config, request } = await axios.get(url, {
       headers: { 'User-Agent': req.headers.get('User-Agent') }
     })
     if (
@@ -113,6 +113,9 @@ export default async (req, context) => {
     ) {
       data = remove_redundant_groups(data)
     }
+    console.log('axios config: ', config)
+    console.log('axios request: ', request)
+    console.log('axios response headers: ', headers)
     delete headers['Content-Encoding']
     return new Response(brotliCompressSync(data), { status, headers })
   } catch (e) {
