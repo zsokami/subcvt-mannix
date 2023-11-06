@@ -101,7 +101,9 @@ export default async (req, context) => {
       for (const [k, v] of DEFAULT_SEARCH_PARAMS)
         if (!url.searchParams.get(k)) url.searchParams.set(k, await v())
     url.search = url.search.replace(/%2F/gi, '/')
-    let { status, headers, data, config, request } = await axios.get(url, { headers: Object.fromEntries(req.headers) })
+    let { status, headers, data, config } = await axios.get(url, {
+      headers: { 'User-Agent': req.headers.get('User-Agent') }
+    })
     if (
       url.pathname == '/sub' &&
       url.searchParams.get('target') == 'clash' &&
@@ -110,8 +112,9 @@ export default async (req, context) => {
     ) {
       data = remove_redundant_groups(data)
     }
+    
+    console.log('axios headers: ', Object.fromEntries(req.headers))
     console.log('axios config: ', config)
-    console.log('axios request: ', request)
     console.log('axios response headers: ', headers)
     return new Response(data, { status, headers })
   } catch (e) {
