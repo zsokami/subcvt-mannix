@@ -112,10 +112,6 @@ export default async (req, context) => {
     ) {
       data = remove_redundant_groups(data)
     }
-    
-    console.log('axios headers: ', [...req.headers.entries()])
-    console.log('axios config: ', config)
-    console.log('axios response headers: ', headers)
     return new Response(data, { status, headers })
   } catch (e) {
     const response = e?.response
