@@ -27,7 +27,7 @@ async function raw_url(repo, branch_or_tag, path) {
 const DEFAULT_SEARCH_PARAMS = [
   ['target', () => 'clash'],
   ['udp', () => 'true'],
-  ['scv', () => 'true'],
+  ['scv', () => 'false'],
   ['config', () => raw_url('zsokami/ACL4SSR', 'main', 'ACL4SSR_Online_Full_Mannix.ini')],
   ['url', () => raw_url('zsokami/sub', 'main', 'trials_providers/All.yaml')]
 ]
