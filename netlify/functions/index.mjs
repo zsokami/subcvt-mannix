@@ -102,7 +102,8 @@ export default async (req, context) => {
         if (!url.searchParams.get(k)) url.searchParams.set(k, await v())
     url.search = url.search.replace(/%2F/gi, '/')
     let { status, headers, data } = await axios.get(url, {
-      headers: { 'User-Agent': req.headers.get('User-Agent') }
+      headers: { 'User-Agent': req.headers.get('User-Agent') },
+      responseType: 'text'
     })
     if (
       url.pathname == '/sub' &&
