@@ -88,6 +88,7 @@ function remove_redundant_groups (clash) {
 
 function brResponse(body, init) {
   ((init ??= {}).headers ??= {})['Content-Encoding'] = 'br'
+  delete init.headers['content-length']
   return new Response(brotliCompressSync(body), init)
 }
 
