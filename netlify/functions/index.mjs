@@ -32,6 +32,8 @@ const DEFAULT_SEARCH_PARAMS = [
   ['url', () => raw_url('zsokami/sub', 'main', 'trials_providers/All.yaml')]
 ]
 
+const HEADER_KEYS = new Set(['content-type', 'content-disposition', 'subscription-userInfo', 'profile-update-interval'])
+
 class SCError extends Error {}
 
 Object.getPrototypeOf(YAML.YAMLMap).maxFlowStringSingleLineLength = Infinity
@@ -119,12 +121,12 @@ export default async (req, context) => {
     ) {
       data = remove_redundant_groups(data)
     }
-    return brResponse(data, { status, headers })
+    return brResponse(data, { status, headers: Object.fromEntries(Object.entries(headers).filter(h => HEADER_KEYS.has(h[0]))) })
   } catch (e) {
     const response = e?.response
     if (response) {
-      const { status, headers, data } = response
-      return brResponse(typeof data === 'string' ? data : JSON.stringify(data), { status, headers })
+      const { status, data } = response
+      return brResponse(typeof data === 'string' ? data : JSON.stringify(data), { status })
     }
     return brResponse(String(e), { status: e instanceof SCError ? 400 : 500 })
   }
