@@ -1,4 +1,4 @@
-import { URL } from 'url'
+import { brotliCompressSync } from 'zlib'
 import axios from 'axios'
 import YAML from 'yaml'
 
@@ -86,6 +86,11 @@ function remove_redundant_groups (clash) {
   })
 }
 
+function brResponse(body, init) {
+  ((init ??= {}).headers ??= {})['Content-Encoding'] = 'br'
+  return new Response(brotliCompressSync(body), init)
+}
+
 export default async (req, context) => {
   try {
     const url = new URL(req.url)
@@ -113,14 +118,14 @@ export default async (req, context) => {
     ) {
       data = remove_redundant_groups(data)
     }
-    return new Response(data, { status, headers })
+    return brResponse(data, { status, headers })
   } catch (e) {
     const response = e?.response
     if (response) {
       const { status, headers, data } = response
-      return new Response(typeof data === 'string' ? data : JSON.stringify(data), { status, headers })
+      return brResponse(typeof data === 'string' ? data : JSON.stringify(data), { status, headers })
     }
-    return new Response(String(e), { status: e instanceof SCError ? 400 : 500 })
+    return brResponse(String(e), { status: e instanceof SCError ? 400 : 500 })
   }
 }
 
