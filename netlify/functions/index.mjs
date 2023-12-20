@@ -99,17 +99,21 @@ export default async (req, context) => {
       url.host = path.splice(1, 1)[0]
       url.pathname = path.join('/')
     } else {
-      url.host = SUBCONVERTERS[(Math.random() * SUBCONVERTERS.length) | 0]
+      const i = (Math.random() * SUBCONVERTERS.length) | 0
+      url.host = SUBCONVERTERS[i]
+      console.log('random', i, SUBCONVERTERS[i])
     }
     if (!path[1]) url.pathname = 'sub'
     if (url.pathname == '/sub')
       for (const [k, v] of DEFAULT_SEARCH_PARAMS)
         if (!url.searchParams.get(k)) url.searchParams.set(k, await v())
     url.search = url.search.replace(/%2F/gi, '/')
-    let { status, headers, data } = await axios.get(url, {
+    console.log('s url=', url.href)
+    let { status, headers, data } = await axios.get(url.href, {
       headers: { 'User-Agent': req.headers.get('User-Agent') },
       responseType: 'text'
     })
+    console.log('e url=', url.href)
     if (
       url.pathname == '/sub' &&
       url.searchParams.get('target') == 'clash' &&
