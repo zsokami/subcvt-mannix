@@ -1,4 +1,4 @@
-import { brotliCompressSync } from 'zlib'
+import { brotliCompressSync, gzipSync } from 'zlib'
 import axios from 'axios'
 import YAML from 'yaml'
 
@@ -11,7 +11,7 @@ const SUBCONVERTERS = [
 
 const GITHUB_REPOS_API = axios.create({
   baseURL: 'https://api.github.com/repos/',
-  headers: { 'Authorization': 'Bearer ' + process.env.GITHUB_REPOS_API_KEY }
+  headers: { 'authorization': 'Bearer ' + process.env.GITHUB_REPOS_API_KEY }
 })
 
 async function raw_url(repo, branch_or_tag, path) {
@@ -88,13 +88,18 @@ function remove_redundant_groups (clash) {
   })
 }
 
-function brResponse(body, init) {
-  ((init ??= {}).headers ??= {})['Content-Encoding'] = 'br'
-  delete init.headers['content-length']
-  return new Response(brotliCompressSync(body), init)
+function wrap(handler) {
+  return async (req, context) => {
+    const { data = '', ...init } = await handler(req, context)
+    const [ce, fn] = req.headers.get('accept-encoding')?.match(/\bbr\b(?!\s*;\s*q=0(?:\.0*)?(?:,|$))/i)
+      ? ['br', brotliCompressSync] : ['gzip', gzipSync]
+    ;(init.headers ??= {})['content-encoding'] = ce
+    delete init.headers['content-length']
+    return new Response(fn(data), init)
+  }
 }
 
-export default async (req, context) => {
+export default wrap(async (req, context) => {
   try {
     const url = new URL(req.url)
     const path = url.pathname.split('/')
@@ -110,7 +115,7 @@ export default async (req, context) => {
         if (!url.searchParams.get(k)) url.searchParams.set(k, await v())
     url.search = url.search.replace(/%2F/gi, '/')
     let { status, headers, data } = await axios.get(url.href, {
-      headers: { 'User-Agent': req.headers.get('User-Agent') },
+      headers: { 'user-agent': req.headers.get('user-agent') },
       responseType: 'text'
     })
     if (
@@ -121,16 +126,16 @@ export default async (req, context) => {
     ) {
       data = remove_redundant_groups(data)
     }
-    return brResponse(data, { status, headers: Object.fromEntries(Object.entries(headers).filter(h => HEADER_KEYS.has(h[0]))) })
+    return { data, status, headers: Object.fromEntries(Object.entries(headers).filter(h => HEADER_KEYS.has(h[0]))) }
   } catch (e) {
     const response = e?.response
     if (response) {
       const { status, data } = response
-      return brResponse(typeof data === 'string' ? data : JSON.stringify(data), { status })
+      return { data, status }
     }
-    return brResponse(String(e), { status: e instanceof SCError ? 400 : 500 })
+    return { data: String(e), status: e instanceof SCError ? 400 : 500 }
   }
-}
+})
 
 export const config = {
   path: '/*'
