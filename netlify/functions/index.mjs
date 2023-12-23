@@ -113,8 +113,8 @@ function wrap(handler) {
     const { data = '', ...init } = await handler(req, context)
     const [ce, fn] = req.headers.get('accept-encoding')?.match(/\bbr\b(?!\s*;\s*q=0(?:\.0*)?(?:,|$))/i)
       ? ['br', brotliCompressSync] : ['gzip', gzipSync]
-    ;(init.headers ??= {})['content-encoding'] = ce
-    delete init.headers['content-length']
+    init.headers = init.headers ? Object.fromEntries(Object.entries(init.headers).filter(h => HEADER_KEYS.has(h[0]))) : {}
+    init.headers['content-encoding'] = ce
     return new Response(fn(data), init)
   }
 }
@@ -153,13 +153,13 @@ export default wrap(async (req, context) => {
     ) {
       data = remove_redundant_groups(data)
     }
-    return { data, status, headers: Object.fromEntries(Object.entries(headers).filter(h => HEADER_KEYS.has(h[0]))) }
+    return { data, status, headers }
   } catch (e) {
     const response = e?.response
     if (response) {
-      let { status, data } = response
+      let { status, headers, data } = response
       if (typeof data !== 'string') data = JSON.stringify(data)
-      return { data, status }
+      return { data, status, headers }
     }
     return { data: String(e), status: e instanceof SCError ? 400 : 500 }
   }
