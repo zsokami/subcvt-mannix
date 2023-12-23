@@ -136,6 +136,8 @@ export default wrap(async (req, context) => {
       url.pathname = 'sub'
       path.shift()
       url.searchParams.set('url', await raw_url(path))
+      if (!req.headers.get('accept')?.includes('text/html'))
+        url.searchParams.set('filename', path[path.length - 1])
     }
     if (url.pathname === '/sub')
       for (const [k, v] of DEFAULT_SEARCH_PARAMS)
@@ -161,7 +163,7 @@ export default wrap(async (req, context) => {
       if (typeof data !== 'string') data = JSON.stringify(data)
       return { data, status, headers }
     }
-    return { data: String(e), status: e instanceof SCError ? 400 : 500 }
+    return { data: String(e), status: e instanceof SCError ? 400 : 500, headers: { 'content-type': 'text/plain;charset=utf-8' } }
   }
 })
 
