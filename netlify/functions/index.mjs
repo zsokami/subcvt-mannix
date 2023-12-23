@@ -34,10 +34,12 @@ async function raw_url(path) {
           if (ref_parts[i] !== parts[i]) break
         }
       }
-      throw new Error()
-    })
-    .catch(() => {
       return [parts[2], 3]
+    })
+    .catch(e => {
+      if (e.response?.status === 404)
+        return [parts[2], 3]
+      throw e
     })
   return `https://raw.githubusercontent.com/${repo}/${sha}/${parts.slice(i).join('/')}`
 }
