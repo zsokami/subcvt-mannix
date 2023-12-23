@@ -15,33 +15,33 @@ const GITHUB_REPOS_API = axios.create({
 })
 
 async function raw_url(path) {
-  const parts = path.split('/').filter(x => x)
-  if (parts.length < 4) throw new SCError('raw 路径错误')
-  const repo = parts[0] + '/' + parts[1]
-  const [sha, i] = await GITHUB_REPOS_API(`${repo}/git/refs/heads/${parts[2]}`)
+  if (!Array.isArray(path)) path = path.split('/').filter(x => x)
+  if (path.length < 4) throw new SCError('raw 路径错误')
+  const repo = path[0] + '/' + path[1]
+  const [sha, i] = await GITHUB_REPOS_API(`${repo}/git/refs/heads/${path[2]}`)
     .catch(e => {
       if (e.response?.status === 404)
-        return GITHUB_REPOS_API(`${repo}/git/refs/tags/${parts[2]}`)
+        return GITHUB_REPOS_API(`${repo}/git/refs/tags/${path[2]}`)
       throw e
     })
     .then(({ data }) => {
       if (!Array.isArray(data)) return [data.object.sha, 3]
       for (const item of data) {
         const ref_parts = item.ref.split('/')
-        if (ref_parts.length >= parts.length) continue
+        if (ref_parts.length >= path.length) continue
         for (let i = 3;; ++i) {
           if (i >= ref_parts.length) return [item.object.sha, i]
-          if (ref_parts[i] !== parts[i]) break
+          if (ref_parts[i] !== path[i]) break
         }
       }
-      return [parts[2], 3]
+      return [path[2], 3]
     })
     .catch(e => {
       if (e.response?.status === 404)
-        return [parts[2], 3]
+        return [path[2], 3]
       throw e
     })
-  return `https://raw.githubusercontent.com/${repo}/${sha}/${parts.slice(i).join('/')}`
+  return `https://raw.githubusercontent.com/${repo}/${sha}/${path.slice(i).join('/')}`
 }
 
 const DEFAULT_SEARCH_PARAMS = [
@@ -122,14 +122,21 @@ function wrap(handler) {
 export default wrap(async (req, context) => {
   try {
     const url = new URL(req.url)
-    const path = url.pathname.split('/')
-    if (path[1].includes('.')) {
-      url.host = path.splice(1, 1)[0]
+    const path = url.pathname.split('/').filter(x => x)
+    url.pathname = path.join('/')
+    if (path[0]?.includes('.')) {
+      url.host = path.shift()
       url.pathname = path.join('/')
     } else {
       url.host = SUBCONVERTERS[(Math.random() * SUBCONVERTERS.length) | 0]
     }
-    if (!path[1]) url.pathname = 'sub'
+    if (!path.length) {
+      url.pathname = 'sub'
+    } else if (path[0] === 'r') {
+      url.pathname = 'sub'
+      path.shift()
+      url.searchParams.set('url', await raw_url(path))
+    }
     if (url.pathname === '/sub')
       for (const [k, v] of DEFAULT_SEARCH_PARAMS)
         if (!url.searchParams.get(k)) url.searchParams.set(k, await v())
