@@ -158,6 +158,7 @@ export default wrap(async (req, context) => {
     const response = e?.response
     if (response) {
       const { status, data } = response
+      if (typeof data !== 'string') data = JSON.stringify(data)
       return { data, status }
     }
     return { data: String(e), status: e instanceof SCError ? 400 : 500 }
