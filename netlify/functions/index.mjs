@@ -157,7 +157,7 @@ export default wrap(async (req, context) => {
   } catch (e) {
     const response = e?.response
     if (response) {
-      const { status, data } = response
+      let { status, data } = response
       if (typeof data !== 'string') data = JSON.stringify(data)
       return { data, status }
     }
