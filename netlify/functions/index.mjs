@@ -136,8 +136,10 @@ export default wrap(async (req, context) => {
       url.pathname = 'sub'
       path.shift()
       url.searchParams.set('url', await raw_url(path))
-      if (!req.headers.get('accept')?.includes('text/html'))
-        url.searchParams.set('filename', path[path.length - 1])
+      if (!url.searchParams.get('filename') && !req.headers.get('accept')?.includes('text/html')) {
+        const [fi, la] = [path[0], path[path.length - 1]]
+        url.searchParams.set('filename', fi === la ? fi : fi + ' - ' + la)
+      }
     }
     if (url.pathname === '/sub')
       for (const [k, v] of DEFAULT_SEARCH_PARAMS)
