@@ -3,10 +3,8 @@ import axios from 'axios'
 import YAML from 'yaml'
 
 const SUBCONVERTERS = [
-  'api.suda-cdn.com',
   'api.dler.io',
-  'api.nexconvert.com',
-  'limbopro.cyou'
+  'sub.xeton.dev',
 ]
 
 const GITHUB_REPOS_API = axios.create({
