@@ -4,7 +4,6 @@ import YAML from 'yaml'
 
 const SUBCONVERTERS = [
   'api.dler.io',
-  'sub.xeton.dev',
 ]
 
 const GITHUB_REPOS_API = axios.create({
