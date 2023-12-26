@@ -127,7 +127,7 @@ export default wrap(async (req, context) => {
     }
     const pathstr = url.pathname
     const path = pathstr.split('/').filter(x => x)
-    if (path[0]?.includes('.')) {
+    if (path[0]?.includes('.') && !path[0].includes('%')) {
       url.host = path.shift()
     } else {
       url.host = SUBCONVERTERS[(Math.random() * SUBCONVERTERS.length) | 0]
