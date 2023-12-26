@@ -9,6 +9,12 @@
 - `https://c.7.cr/version`（指定路径）
 - `https://c.7.cr/api.v1.mk/version`（指定后端和路径）
 
+url 参数快捷方式
+
+- `https://c.7.cr/{原订阅链接}`（原订阅链接需 URL 编码）
+- `https://c.7.cr?{原订阅链接}`（原订阅链接无需 URL 编码）
+- `https://c.7.cr?config={远程配置}&{原订阅链接}`（原订阅链接无需 URL 编码）
+
 github raw url 快捷方式
 
 `https://c.7.cr/r/{owner}/{repo}/{ref}/{path}` -> `https://c.7.cr?url=https://raw.githubusercontent.com/{owner}/{repo}/{ref}/{path}`

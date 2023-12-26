@@ -119,11 +119,16 @@ function wrap(handler) {
 export default wrap(async (req, context) => {
   try {
     const url = new URL(req.url)
-    const path = url.pathname.split('/').filter(x => x)
-    url.pathname = path.join('/')
+    let suburlmatch = url.search.match(/[?&][^&=]*(:|%3A)/i)
+    if (suburlmatch) {
+      const sub = url.search.substring(suburlmatch.index + 1)
+      url.search = url.search.substring(0, suburlmatch.index)
+      url.searchParams.set('url', suburlmatch[1] === ':' ? sub : decodeURIComponent(sub))
+    }
+    const pathstr = url.pathname
+    const path = pathstr.split('/').filter(x => x)
     if (path[0]?.includes('.')) {
       url.host = path.shift()
-      url.pathname = path.join('/')
     } else {
       url.host = SUBCONVERTERS[(Math.random() * SUBCONVERTERS.length) | 0]
     }
@@ -137,10 +142,17 @@ export default wrap(async (req, context) => {
         const [fi, la] = [path[0], path[path.length - 1]]
         url.searchParams.set('filename', fi === la ? fi : fi + ' - ' + la)
       }
+    } else if (suburlmatch = pathstr.match(/[^/]*(?::|%3A)(?:\/|%2F).*/i)) {
+      url.pathname = 'sub'
+      url.searchParams.set('url', decodeURIComponent(suburlmatch[0]))
+    } else {
+      url.pathname = path.join('/')
     }
-    if (url.pathname === '/sub')
-      for (const [k, v] of DEFAULT_SEARCH_PARAMS)
+    if (url.pathname === '/sub') {
+      for (const [k, v] of DEFAULT_SEARCH_PARAMS) {
         if (!url.searchParams.get(k)) url.searchParams.set(k, await v())
+      }
+    }
     url.search = url.search.replace(/%2F/gi, '/')
     let { status, headers, data } = await axios.get(url.href, {
       headers: { 'user-agent': req.headers.get('user-agent') },
