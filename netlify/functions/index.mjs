@@ -49,7 +49,7 @@ const DEFAULT_SEARCH_PARAMS = [
   ['url', () => raw_url('zsokami/sub/main/trials_providers/All.yaml')]
 ]
 
-const HEADER_KEYS = new Set(['content-type', 'content-disposition', 'subscription-userInfo', 'profile-update-interval'])
+const HEADER_KEYS = new Set(['content-type', 'content-disposition', 'subscription-userinfo', 'profile-update-interval'])
 
 class SCError extends Error {}
 
