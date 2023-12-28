@@ -55,7 +55,7 @@ class SCError extends Error {}
 
 Object.getPrototypeOf(YAML.YAMLMap).maxFlowStringSingleLineLength = Infinity
 
-function remove_redundant_groups (clash) {
+function remove_redundancy (clash) {
   const y = YAML.parseDocument(clash, { version: '1.1' })
   const removed = new Set()
   const ps = y.get('proxies')?.items || []
@@ -106,8 +106,7 @@ function remove_redundant_groups (clash) {
     const rules = y.get('rules')?.items || []
     let i = 0
     for (const rule of rules) {
-      const v = rule.value
-      if (!removed.has(v.substring(v.lastIndexOf(',') + 1))) {
+      if (!removed.has(rule.value.split(',')[2])) {
         rules[i++] = rule
       }
     }
@@ -175,11 +174,9 @@ export default wrap(async (req, context) => {
     })
     if (
       url.pathname === '/sub' &&
-      url.searchParams.get('target') === 'clash' &&
-      url.searchParams.get('list') !== 'true' &&
-      url.searchParams.get('expand') !== 'false'
+      url.searchParams.get('target') === 'clash'
     ) {
-      data = remove_redundant_groups(data)
+      data = remove_redundancy(data)
     }
     return { data, status, headers }
   } catch (e) {
