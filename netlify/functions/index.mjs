@@ -57,6 +57,18 @@ Object.getPrototypeOf(YAML.YAMLMap).maxFlowStringSingleLineLength = Infinity
 
 function remove_redundant_groups (clash) {
   const y = YAML.parseDocument(clash, { version: '1.1' })
+  const removed = new Set()
+  const ps = y.get('proxies')?.items || []
+  let i = 0
+  for (const p of ps) {
+    const uuid = p.get('uuid')
+    if (uuid === undefined || /^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i.test(uuid)) {
+      ps[i++] = p
+    } else {
+      removed.add(p.get('name'))
+    }
+  }
+  ps.splice(i)
   const gs = y.get('proxy-groups')?.items
   if (gs) {
     const name_g_pairs = gs.map(g => [g.get('name'), g])
@@ -67,36 +79,39 @@ function remove_redundant_groups (clash) {
       let i = 0
       for (const name of names) {
         const name_v = name.value ?? name
+        if (removed.has(name_v)) continue
         const g = name_to_g[name_v]
         if (g !== undefined) {
           if (!(name_v in vis)) {
             vis[name_v] = -1
-            vis[name_v] = dfs(g.get('proxies').items)
+            if (!(vis[name_v] = dfs(g.get('proxies').items))) {
+              removed.add(name_v)
+              continue
+            }
           } else if (vis[name_v] === -1) {
             throw new SCError(`循环引用 ${name_v}`)
           }
-          if (!vis[name_v]) continue
         }
         names[i++] = name
       }
       names.splice(i)
       return i > 1 || (i === 1 && names[0].value !== 'DIRECT')
     })(names)
-
     if (names.length < gs.length) {
       names.forEach((name, i) => (gs[i] = name_to_g[name]))
       gs.splice(names.length)
-      const rules = y.get('rules')?.items
-      if (rules) {
-        for (const rule of rules) {
-          const parts = rule.value.split(',')
-          if (vis[parts[2]] === false) {
-            parts[2] = 'DIRECT'
-            rule.value = parts.join(',')
-          }
-        }
+    }
+  }
+  if (removed.size) {
+    const rules = y.get('rules')?.items || []
+    let i = 0
+    for (const rule of rules) {
+      const v = rule.value
+      if (!removed.has(v.substring(v.lastIndexOf(',') + 1))) {
+        rules[i++] = rule
       }
     }
+    rules.splice(i)
   }
   return y.toString({
     lineWidth: 0,

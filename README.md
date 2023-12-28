@@ -1,6 +1,6 @@
 # subcvt-mannix
 
-订阅转换后端 api 反向代理 + clash 自动移除无节点的分组
+订阅转换后端 api 反向代理 + clash 自动移除无节点的分组和错误 uuid 的节点
 
 默认 /sub 路径，默认转为 clash 订阅
 
