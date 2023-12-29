@@ -63,11 +63,14 @@ function cleanClash(clash) {
   for (const p of ps) {
     const uuid = p.get('uuid')
     if (uuid === undefined || /^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i.test(uuid)) {
-      const grpc_service_name = p.getIn(['grpc-opts', 'grpc-service-name'], true)
-      if (grpc_service_name !== undefined) {
-        try {
-          grpc_service_name.value = decodeURIComponent(grpc_service_name.value)
-        } catch (ignored) {}
+      const grpc_opts = p.get('grpc-opts')
+      if (grpc_opts) {
+        const grpc_service_name = grpc_opts.get('grpc-service-name')
+        if (grpc_service_name !== undefined) {
+          try {
+            grpc_opts.set('grpc-service-name', decodeURIComponent(grpc_service_name))
+          } catch (ignored) {}
+        }
       }
       ps[i++] = p
     } else {
