@@ -171,10 +171,13 @@ export default wrap(async (req, context) => {
       for (const [k, v] of DEFAULT_SEARCH_PARAMS) {
         if (!url.searchParams.get(k)) url.searchParams.set(k, await v())
       }
-      if (!url.searchParams.get('filename') && !req.headers.get('accept')?.includes('text/html')) {
-        const m = url.searchParams.get('url')?.match(/^https?:\/\/raw.githubusercontent.com\/+([^/|]+)\/+(?:[^/|]+\/+){2,}([^/|]+)$/)
-        if (m) {
+      const suburl = url.searchParams.get('url')
+      if (suburl && !url.searchParams.get('filename') && !req.headers.get('accept')?.includes('text/html')) {
+        let m
+        if (m = suburl.match(/^https?:\/\/raw.githubusercontent.com\/+([^/|]+)(?:\/+[^/|]+){2,}\/+([^/|]+)$/)) {
           url.searchParams.set('filename', m[1] === m[2] ? m[1] : m[1] + ' - ' + m[2])
+        } else if (m = suburl.match(/^(https?:\/\/raw.githubusercontent.com\/+([^/|]+))(?:\/+[^/|]+){3,}(?:\|+\1(?:\/+[^/|]+){3,})*$/)) {
+          url.searchParams.set('filename', m[2])
         }
       }
     }
