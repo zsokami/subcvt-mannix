@@ -11,7 +11,7 @@ const GITHUB_REPOS_API = axios.create({
   headers: { 'authorization': 'Bearer ' + process.env.GITHUB_REPOS_API_KEY }
 })
 
-async function raw_url(path) {
+async function getGithubRawURL(path) {
   if (!Array.isArray(path)) path = path.split('/').filter(x => x)
   if (path.length < 4) throw new SCError('raw 路径错误')
   const repo = path[0] + '/' + path[1]
@@ -45,8 +45,8 @@ const DEFAULT_SEARCH_PARAMS = [
   ['target', () => 'clash'],
   ['udp', () => 'true'],
   ['scv', () => 'true'],
-  ['config', () => raw_url('zsokami/ACL4SSR/main/ACL4SSR_Online_Full_Mannix.ini')],
-  ['url', () => raw_url('zsokami/sub/main/trials_providers/All.yaml')]
+  ['config', () => getGithubRawURL('zsokami/ACL4SSR/main/ACL4SSR_Online_Full_Mannix.ini')],
+  ['url', () => getGithubRawURL('zsokami/sub/main/trials_providers/All.yaml')]
 ]
 
 const HEADER_KEYS = new Set(['content-type', 'content-disposition', 'subscription-userinfo', 'profile-update-interval'])
@@ -55,7 +55,7 @@ class SCError extends Error {}
 
 Object.getPrototypeOf(YAML.YAMLMap).maxFlowStringSingleLineLength = Infinity
 
-function remove_redundancy (clash) {
+function cleanClash(clash) {
   const y = YAML.parseDocument(clash, { version: '1.1' })
   const removed = new Set()
   const ps = y.get('proxies')?.items || []
@@ -63,6 +63,12 @@ function remove_redundancy (clash) {
   for (const p of ps) {
     const uuid = p.get('uuid')
     if (uuid === undefined || /^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i.test(uuid)) {
+      const grpc_service_name = p.getIn(['grpc-opts', 'grpc-service-name'], true)
+      if (grpc_service_name !== undefined) {
+        try {
+          grpc_service_name.value = decodeURIComponent(grpc_service_name.value)
+        } catch (ignored) {}
+      }
       ps[i++] = p
     } else {
       removed.add(p.get('name'))
@@ -151,7 +157,7 @@ export default wrap(async (req, context) => {
     } else if (path[0] === 'r') {
       url.pathname = 'sub'
       path.shift()
-      url.searchParams.set('url', await raw_url(path))
+      url.searchParams.set('url', await getGithubRawURL(path))
       if (!url.searchParams.get('filename') && !req.headers.get('accept')?.includes('text/html')) {
         const [fi, la] = [path[0], path[path.length - 1]]
         url.searchParams.set('filename', fi === la ? fi : fi + ' - ' + la)
@@ -176,7 +182,7 @@ export default wrap(async (req, context) => {
       url.pathname === '/sub' &&
       url.searchParams.get('target') === 'clash'
     ) {
-      data = remove_redundancy(data)
+      data = cleanClash(data)
     }
     return { data, status, headers }
   } catch (e) {
