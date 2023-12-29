@@ -67,7 +67,7 @@ function cleanClash(clash) {
       if (grpc_service_name !== undefined) {
         try {
           grpc_service_name.value = decodeURIComponent(grpc_service_name.value)
-          if (grpc_service_name.type === 'PLAIN' && grpc_service_name.value.includes('#')) {
+          if (grpc_service_name.type === 'PLAIN' && grpc_service_name.value.includes('?')) {
             grpc_service_name.type = 'QUOTE_DOUBLE'
           }
         } catch (ignored) {}
