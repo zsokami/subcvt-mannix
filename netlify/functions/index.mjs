@@ -161,10 +161,6 @@ export default wrap(async (req, context) => {
       url.pathname = 'sub'
       path.shift()
       url.searchParams.set('url', await getGithubRawURL(path))
-      if (!url.searchParams.get('filename') && !req.headers.get('accept')?.includes('text/html')) {
-        const [fi, la] = [path[0], path[path.length - 1]]
-        url.searchParams.set('filename', fi === la ? fi : fi + ' - ' + la)
-      }
     } else if (suburlmatch = pathstr.match(/[^/]*(?::|%3A)(?:\/|%2F).*/i)) {
       url.pathname = 'sub'
       url.searchParams.set('url', decodeURIComponent(suburlmatch[0]))
@@ -174,6 +170,12 @@ export default wrap(async (req, context) => {
     if (url.pathname === '/sub') {
       for (const [k, v] of DEFAULT_SEARCH_PARAMS) {
         if (!url.searchParams.get(k)) url.searchParams.set(k, await v())
+      }
+      if (!url.searchParams.get('filename') && !req.headers.get('accept')?.includes('text/html')) {
+        const m = url.searchParams.get('url')?.match(/^https?:\/\/raw.githubusercontent.com\/+([^/]+)\/+(?:[^/]+\/+){2,}([^/]+)$/)
+        if (m) {
+          url.searchParams.set('filename', m[1] === m[2] ? m[1] : m[1] + ' - ' + m[2])
+        }
       }
     }
     url.search = url.search.replace(/%2F/gi, '/')
