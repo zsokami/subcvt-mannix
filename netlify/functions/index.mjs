@@ -57,6 +57,7 @@ Object.getPrototypeOf(YAML.YAMLMap).maxFlowStringSingleLineLength = Infinity
 
 function cleanClash(clash) {
   const y = YAML.parseDocument(clash, { version: '1.1' })
+  console.time('in cleanClash')
   const removed = new Set()
   const ps = y.get('proxies')?.items || []
   let i = 0
@@ -121,6 +122,7 @@ function cleanClash(clash) {
     }
     rules.splice(i)
   }
+  console.timeEnd('in cleanClash')
   return y.toString({
     lineWidth: 0,
     indentSeq: false,
@@ -190,7 +192,9 @@ export default wrap(async (req, context) => {
       url.pathname === '/sub' &&
       url.searchParams.get('target') === 'clash'
     ) {
+      console.time('cleanClash')
       data = cleanClash(data)
+      console.timeEnd('cleanClash')
     }
     return { data, status, headers }
   } catch (e) {
