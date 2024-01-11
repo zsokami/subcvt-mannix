@@ -1,9 +1,10 @@
+import { spawn } from 'child_process'
 import { brotliCompressSync, gzipSync } from 'zlib'
 import axios from 'axios'
 import YAML from 'yaml'
 
 const SUBCONVERTERS = [
-  'api.dler.io',
+  '127.0.0.1:25500',
 ]
 
 const GITHUB_REPOS_API = axios.create({
@@ -184,10 +185,25 @@ export default wrap(async (req, context) => {
       }
     }
     url.search = url.search.replace(/%2F/gi, '/')
+    let subconverter_process
+    if (url.host === '127.0.0.1:25500') {
+      subconverter_process = spawn('subconverter/subconverter')
+      await new Promise(resolve => {
+        subconverter_process.stderr.on('data', function listener(data) {
+          if (data.includes('Startup completed')) {
+            resolve()
+            subconverter_process.stderr.off('data', listener)
+          }
+        })
+      })
+    }
     let { status, headers, data } = await axios.get(url.href, {
       headers: { 'user-agent': req.headers.get('user-agent') },
       responseType: 'text'
     })
+    if (url.host === '127.0.0.1:25500') {
+      subconverter_process.kill()
+    }
     if (
       url.pathname === '/sub' &&
       url.searchParams.get('target') === 'clash'
