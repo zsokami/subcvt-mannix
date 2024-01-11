@@ -185,8 +185,10 @@ export default wrap(async (req, context) => {
       }
     }
     url.search = url.search.replace(/%2F/gi, '/')
+    console.time('subconverter')
     let subconverter_process
     if (url.host === '127.0.0.1:25500') {
+      url.protocol = 'http:'
       subconverter_process = spawn('subconverter/subconverter')
       await new Promise(resolve => {
         subconverter_process.stderr.on('data', function listener(data) {
@@ -204,6 +206,7 @@ export default wrap(async (req, context) => {
     if (url.host === '127.0.0.1:25500') {
       subconverter_process.kill()
     }
+    console.timeEnd('subconverter')
     if (
       url.pathname === '/sub' &&
       url.searchParams.get('target') === 'clash'
