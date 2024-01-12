@@ -1,5 +1,7 @@
 import { spawn } from 'child_process'
 import { brotliCompressSync, gzipSync } from 'zlib'
+import { domainToUnicode } from 'url'
+
 import axios from 'axios'
 import YAML from 'yaml'
 
@@ -170,6 +172,8 @@ export default wrap(async (req, context) => {
           url.searchParams.set('filename', m[1] === m[2] ? m[1] : m[1] + ' - ' + urlDecode(m[2]))
         } else if (m = suburl.match(/^(https?:\/\/raw.githubusercontent.com\/+([^/|]+))(?:\/+[^/|]+){3,}(?:\|+\1(?:\/+[^/|]+){3,})*$/)) {
           url.searchParams.set('filename', m[2])
+        } else if (m = suburl.match(/^(https?:\/\/([^:/?#|]+))(?:[:/?#][^|]*)?(?:\|+\1(?:[:/?#][^|]*)?)*$/)) {
+          url.searchParams.set('filename', domainToUnicode(m[2]))
         }
       }
     }
