@@ -9,8 +9,8 @@
 - 对 grpc-service-name 进行 URL 解码
 - 节点类型筛选（使用正则表达式）：
   - `type=vmess|trojan` 匹配 vmess 和 trojan 节点
-  - `type!=hysteria` 排除 hysteria 和 hysteria2 节点
-  - `type!=^hysteria$` 排除 hysteria 节点
+  - `type!=hysteria2?` 排除 hysteria 和 hysteria2 节点
+  - `type!=ss` 排除 ss 节点
 
 默认 /sub 路径，默认转为 clash 订阅
 

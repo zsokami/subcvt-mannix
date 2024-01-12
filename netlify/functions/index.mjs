@@ -59,8 +59,8 @@ Object.getPrototypeOf(YAML.YAMLMap).maxFlowStringSingleLineLength = Infinity
 function cleanClash(clash, options = {}) {
   const y = YAML.parseDocument(clash, { version: '1.1' })
   console.time('in cleanClash')
-  const re_type = options['type'] && new RegExp(options['type'])
-  const re_type_not = options['type!'] && new RegExp(options['type!'])
+  const re_type = options['type'] && new RegExp(`^(?:${options['type']})$`)
+  const re_type_not = options['type!'] && new RegExp(`^(?:${options['type!']})$`)
   const removed = new Set()
   const ps = y.get('proxies')?.items || []
   let i = 0
