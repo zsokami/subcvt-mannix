@@ -56,15 +56,22 @@ class SCError extends Error {}
 
 Object.getPrototypeOf(YAML.YAMLMap).maxFlowStringSingleLineLength = Infinity
 
-function cleanClash(clash) {
+function cleanClash(clash, options = {}) {
   const y = YAML.parseDocument(clash, { version: '1.1' })
   console.time('in cleanClash')
+  const re_type = options['type'] && new RegExp(options['type'])
+  const re_type_not = options['type!'] && new RegExp(options['type!'])
   const removed = new Set()
   const ps = y.get('proxies')?.items || []
   let i = 0
   for (const p of ps) {
     const uuid = p.get('uuid')
-    if (uuid === undefined || /^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i.test(uuid)) {
+    const type = p.get('type')
+    if (
+      (uuid === undefined || /^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i.test(uuid))
+      && (!re_type || re_type.test(type))
+      && (!re_type_not || !re_type_not.test(type))
+    ) {
       const grpc_service_name = p.getIn(['grpc-opts', 'grpc-service-name'], true)
       if (grpc_service_name !== undefined) {
         try {
@@ -170,9 +177,16 @@ export default wrap(async (req, context) => {
     } else {
       url.pathname = path.join('/')
     }
+    const options = {}
     if (url.pathname === '/sub') {
       for (const [k, v] of DEFAULT_SEARCH_PARAMS) {
         if (!url.searchParams.get(k)) url.searchParams.set(k, await v())
+      }
+      if (url.searchParams.get('target') === 'clash') {
+        options['type'] = url.searchParams.get('type')
+        options['type!'] = url.searchParams.get('type!')
+        url.searchParams.delete('type')
+        url.searchParams.delete('type!')
       }
       const suburl = url.searchParams.get('url')
       if (suburl && !url.searchParams.get('filename') && !req.headers.get('accept')?.includes('text/html')) {
@@ -212,7 +226,7 @@ export default wrap(async (req, context) => {
       url.searchParams.get('target') === 'clash'
     ) {
       console.time('cleanClash')
-      data = cleanClash(data)
+      data = cleanClash(data, options)
       console.timeEnd('cleanClash')
     }
     return { data, status, headers }
