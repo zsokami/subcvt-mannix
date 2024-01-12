@@ -9,14 +9,6 @@ const SUBCONVERTERS = [
   '127.0.0.1:25500',
 ]
 
-const urlDecode = x => {
-  x = x?.replaceAll('+', ' ') ?? ''
-  try {
-    x = decodeURIComponent(x)
-  } catch (ignored) {}
-  return x
-}
-
 const DEFAULT_SEARCH_PARAMS = [
   ['target', () => 'clash'],
   ['udp', () => 'true'],
@@ -30,6 +22,14 @@ const HEADER_KEYS = new Set(['content-type', 'content-disposition', 'subscriptio
 class SCError extends Error {}
 
 Object.getPrototypeOf(YAML.YAMLMap).maxFlowStringSingleLineLength = Infinity
+
+const urlDecode = x => {
+  x = x?.replaceAll('+', ' ') ?? ''
+  try {
+    x = decodeURIComponent(x)
+  } catch (ignored) {}
+  return x
+}
 
 function cleanClash(clash, options = {}) {
   const y = YAML.parseDocument(clash, { version: '1.1' })
