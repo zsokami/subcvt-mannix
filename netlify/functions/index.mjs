@@ -22,7 +22,7 @@ const DEFAULT_SEARCH_PARAMS = [
   ['udp', () => 'true'],
   ['scv', () => 'true'],
   ['config', () => getRawURL('zsokami/ACL4SSR', 'ACL4SSR_Online_Full_Mannix.ini')],
-  ['url', () => getRawURL('zsokami/sub/main/trials_providers/All.yaml')]
+  ['url', () => 'https://share.7.cr/base64']
 ]
 
 const HEADER_KEYS = new Set(['content-type', 'content-disposition', 'subscription-userinfo', 'profile-update-interval'])
