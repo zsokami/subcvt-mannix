@@ -7,6 +7,14 @@ const SUBCONVERTERS = [
   '127.0.0.1:25500',
 ]
 
+const urlDecode = x => {
+  x = x?.replaceAll('+', ' ') ?? ''
+  try {
+    x = decodeURIComponent(x)
+  } catch (ignored) {}
+  return x
+}
+
 const GITHUB_REPOS_API = axios.create({
   baseURL: 'https://api.github.com/repos/',
   headers: { 'authorization': 'Bearer ' + process.env.GITHUB_REPOS_API_KEY }
@@ -75,7 +83,7 @@ function cleanClash(clash, options = {}) {
       const grpc_service_name = p.getIn(['grpc-opts', 'grpc-service-name'], true)
       if (grpc_service_name !== undefined) {
         try {
-          grpc_service_name.value = decodeURIComponent(grpc_service_name.value)
+          grpc_service_name.value = urlDecode(grpc_service_name.value)
           if (grpc_service_name.type === 'PLAIN' && grpc_service_name.value.includes('?')) {
             grpc_service_name.type = 'QUOTE_DOUBLE'
           }
@@ -156,7 +164,7 @@ export default wrap(async (req, context) => {
     if (suburlmatch) {
       const sub = url.search.substring(suburlmatch.index + 1)
       url.search = url.search.substring(0, suburlmatch.index)
-      url.searchParams.set('url', suburlmatch[1] === ':' ? sub : decodeURIComponent(sub))
+      url.searchParams.set('url', suburlmatch[1] === ':' ? sub : urlDecode(sub))
     }
     const pathstr = url.pathname
     const path = pathstr.split('/').filter(x => x)
@@ -173,7 +181,7 @@ export default wrap(async (req, context) => {
       url.searchParams.set('url', await getGithubRawURL(path))
     } else if (suburlmatch = pathstr.match(/[^/]*(?::|%3A)(?:\/|%2F).*/i)) {
       url.pathname = 'sub'
-      url.searchParams.set('url', decodeURIComponent(suburlmatch[0]))
+      url.searchParams.set('url', urlDecode(suburlmatch[0]))
     } else {
       url.pathname = path.join('/')
     }
