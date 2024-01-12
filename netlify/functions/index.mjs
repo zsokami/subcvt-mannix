@@ -3,6 +3,8 @@ import { brotliCompressSync, gzipSync } from 'zlib'
 import axios from 'axios'
 import YAML from 'yaml'
 
+import { getRawURL } from './github-api.mjs'
+
 const SUBCONVERTERS = [
   '127.0.0.1:25500',
 ]
@@ -15,47 +17,12 @@ const urlDecode = x => {
   return x
 }
 
-const GITHUB_REPOS_API = axios.create({
-  baseURL: 'https://api.github.com/repos/',
-  headers: { 'authorization': 'Bearer ' + process.env.GITHUB_REPOS_API_KEY }
-})
-
-async function getGithubRawURL(path) {
-  if (!Array.isArray(path)) path = path.split('/').filter(x => x)
-  if (path.length < 4) throw new SCError('raw 路径错误')
-  const repo = path[0] + '/' + path[1]
-  const [sha, i] = await GITHUB_REPOS_API(`${repo}/git/refs/heads/${path[2]}`)
-    .catch(e => {
-      if (e.response?.status === 404)
-        return GITHUB_REPOS_API(`${repo}/git/refs/tags/${path[2]}`)
-      throw e
-    })
-    .then(({ data }) => {
-      if (!Array.isArray(data)) return [data.object.sha, 3]
-      for (const item of data) {
-        const ref_parts = item.ref.split('/')
-        if (ref_parts.length >= path.length) continue
-        for (let i = 3;; ++i) {
-          if (i >= ref_parts.length) return [item.object.sha, i]
-          if (ref_parts[i] !== path[i]) break
-        }
-      }
-      return [path[2], 3]
-    })
-    .catch(e => {
-      if (e.response?.status === 404)
-        return [path[2], 3]
-      throw e
-    })
-  return `https://raw.githubusercontent.com/${repo}/${sha}/${path.slice(i).join('/')}`
-}
-
 const DEFAULT_SEARCH_PARAMS = [
   ['target', () => 'clash'],
   ['udp', () => 'true'],
   ['scv', () => 'true'],
-  ['config', () => getGithubRawURL('zsokami/ACL4SSR/main/ACL4SSR_Online_Full_Mannix.ini')],
-  ['url', () => getGithubRawURL('zsokami/sub/main/trials_providers/All.yaml')]
+  ['config', () => getRawURL('zsokami/ACL4SSR', 'ACL4SSR_Online_Full_Mannix.ini')],
+  ['url', () => getRawURL('zsokami/sub/main/trials_providers/All.yaml')]
 ]
 
 const HEADER_KEYS = new Set(['content-type', 'content-disposition', 'subscription-userinfo', 'profile-update-interval'])
@@ -178,7 +145,7 @@ export default wrap(async (req, context) => {
     } else if (path[0] === 'r') {
       url.pathname = 'sub'
       path.shift()
-      url.searchParams.set('url', await getGithubRawURL(path))
+      url.searchParams.set('url', await getRawURL(path))
     } else if (suburlmatch = pathstr.match(/[^/]*(?::|%3A)(?:\/|%2F).*/i)) {
       url.pathname = 'sub'
       url.searchParams.set('url', urlDecode(suburlmatch[0]))
