@@ -69,33 +69,6 @@ function cleanClash(clash, options = {}) {
     const name_g_pairs = gs.map(g => [g.get('name'), g])
     const name_to_g = Object.fromEntries(name_g_pairs)
     const names = name_g_pairs.map(([name]) => name)
-    const all = name_to_g['⚡ ‍低延迟']?.get('proxies').items
-    if (options['removeDuplicateGroups'] && all !== undefined) {
-      const cn = name_to_g['🇨🇳 ‍中国'].get('proxies').items
-      console.log('cn', cn)
-      for (const k of ['🇭🇰 ‍香港', '🇹🇼 ‍台湾']) {
-        const t = name_to_g[k].get('proxies').items
-        console.log(k, t)
-        if (t.length !== 1 || t[0].value !== 'DIRECT') {
-          if (cn.length === t.length) {
-            console.log('removed')
-            removed.add('🇨🇳 ‍中国')
-            removed.add('👆🏻🇨🇳 ‍中国')
-          }
-          break
-        }
-      }
-      for (const k of ['🇭🇰 ‍香港', '🇹🇼 ‍台湾', '🇸🇬 ‍新加坡', '🇯🇵 ‍日本', '🇺🇸 ‍美国', '🎏 ‍其他']) {
-        const t = name_to_g[k].get('proxies').items
-        if (t.length !== 1 || t[0].value !== 'DIRECT') {
-          if (all.length === t.length) {
-            removed.add(k)
-            removed.add('👆🏻' + k)
-          }
-          break
-        }
-      }
-    }
     const vis = {}
     ;(function dfs (names) {
       let i = 0
@@ -120,6 +93,55 @@ function cleanClash(clash, options = {}) {
       return i > 1 || (i === 1 && names[0].value !== 'DIRECT')
     })(names)
     if (names.length < gs.length) {
+      const all = name_to_g['⚡ ‍低延迟']?.get('proxies').items
+      if (options['removeDuplicateGroups'] && all !== undefined) {
+        let rm = false
+        if (!removed.has('🇨🇳 ‍中国')) {
+          const cn = name_to_g['🇨🇳 ‍中国'].get('proxies').items
+          for (const k of ['🇭🇰 ‍香港', '🇹🇼 ‍台湾']) {
+            if (!removed.has(k)) {
+              const t = name_to_g[k].get('proxies').items
+              if (cn.length === t.length) {
+                removed.add('🇨🇳 ‍中国')
+                removed.add('👆🏻🇨🇳 ‍中国')
+                rm = true
+              }
+              break
+            }
+          }
+        }
+        for (const k of ['🇭🇰 ‍香港', '🇹🇼 ‍台湾', '🇸🇬 ‍新加坡', '🇯🇵 ‍日本', '🇺🇸 ‍美国', '🎏 ‍其他']) {
+          if (!removed.has(k)) {
+            const t = name_to_g[k].get('proxies').items
+            if (all.length === t.length) {
+              removed.add(k)
+              removed.add('👆🏻' + k)
+              rm = true
+            }
+            break
+          }
+        }
+        if (rm) {
+          const gs_select = ['✈️ ‍起飞', '📺 ‍B站', '🤖 ‍OpenAI+Bing']
+          let i = 0
+          for (const name of names) {
+            if (!removed.has(name)) {
+              names[i++] = name
+              if (gs_select.includes(name)) {
+                const _names = name_to_g[name].get('proxies').items
+                let j = 0
+                for (const name of _names) {
+                  if (!removed.has(name)) {
+                    _names[j++] = name
+                  }
+                }
+                _names.splice(j)
+              }
+            }
+          }
+          names.splice(i)
+        }
+      }
       names.forEach((name, i) => (gs[i] = name_to_g[name]))
       gs.splice(names.length)
     }
