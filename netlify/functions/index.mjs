@@ -69,6 +69,30 @@ function cleanClash(clash, options = {}) {
     const name_g_pairs = gs.map(g => [g.get('name'), g])
     const name_to_g = Object.fromEntries(name_g_pairs)
     const names = name_g_pairs.map(([name]) => name)
+    const all = name_to_g['⚡ ‍低延迟']?.get('proxies').items
+    if (options['removeDuplicateGroups'] && all !== undefined) {
+      const cn = name_to_g['🇨🇳 ‍中国'].get('proxies').items
+      for (const k of ['🇭🇰 ‍香港', '🇹🇼 ‍台湾']) {
+        const t = name_to_g[k].get('proxies').items
+        if (t.length !== 1 || t[0].value !== 'DIRECT') {
+          if (cn.length === t.length) {
+            removed.add('🇨🇳 ‍中国')
+            removed.add('👆🏻🇨🇳 ‍中国')
+          }
+          break
+        }
+      }
+      for (const k of ['🇭🇰 ‍香港', '🇹🇼 ‍台湾', '🇸🇬 ‍新加坡', '🇯🇵 ‍日本', '🇺🇸 ‍美国', '🎏 ‍其他']) {
+        const t = name_to_g[k].get('proxies').items
+        if (t.length !== 1 || t[0].value !== 'DIRECT') {
+          if (all.length === t.length) {
+            removed.add(k)
+            removed.add('👆🏻' + k)
+          }
+          break
+        }
+      }
+    }
     const vis = {}
     ;(function dfs (names) {
       let i = 0
@@ -156,6 +180,9 @@ export default wrap(async (req, context) => {
     }
     const options = {}
     if (url.pathname === '/sub') {
+      if (!url.searchParams.get('config')) {
+        options['removeDuplicateGroups'] = true
+      }
       for (const [k, v] of DEFAULT_SEARCH_PARAMS) {
         if (!url.searchParams.get(k)) url.searchParams.set(k, await v())
       }
