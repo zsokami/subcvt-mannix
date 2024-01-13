@@ -131,7 +131,7 @@ function cleanClash(clash, options = {}) {
                 const _names = name_to_g[name].get('proxies').items
                 let j = 0
                 for (const name of _names) {
-                  if (!removed.has(name)) {
+                  if (!removed.has(name.value)) {
                     _names[j++] = name
                   }
                 }
