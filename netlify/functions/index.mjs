@@ -177,6 +177,7 @@ function wrap(handler) {
 
 export default wrap(async (req, context) => {
   try {
+    const startTime = Date.now()
     const url = new URL(req.url)
     let suburlmatch = url.search.match(/[?&][^&=]*(:|%3A)/i)
     if (suburlmatch) {
@@ -231,7 +232,6 @@ export default wrap(async (req, context) => {
     }
     url.search = url.search.replace(/%2F/gi, '/')
     console.time('subconverter')
-    const subconverterStart = Date.now()
     let subconverter_process
     if (url.host === '127.0.0.1:25500') {
       url.protocol = 'http:'
@@ -253,8 +253,10 @@ export default wrap(async (req, context) => {
       subconverter_process.kill()
     }
     console.timeEnd('subconverter')
+    const elapsed = Date.now() - startTime
+    console.log('elapsed:', elapsed)
     if (
-      Date.now() - subconverterStart < 7000 &&
+      elapsed < 7000 &&
       url.pathname === '/sub' &&
       url.searchParams.get('target') === 'clash'
     ) {
