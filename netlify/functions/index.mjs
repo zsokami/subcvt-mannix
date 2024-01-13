@@ -93,8 +93,7 @@ function cleanClash(clash, options = {}) {
       return i > 1 || (i === 1 && names[0].value !== 'DIRECT')
     })(names)
     if (names.length < gs.length) {
-      const all = name_to_g['⚡ ‍低延迟']?.get('proxies').items
-      if (options['removeDuplicateGroups'] && all !== undefined) {
+      if (options['mannixConfig']) {
         let rm = false
         if (!removed.has('🇨🇳 ‍中国')) {
           const cn = name_to_g['🇨🇳 ‍中国'].get('proxies').items
@@ -110,6 +109,7 @@ function cleanClash(clash, options = {}) {
             }
           }
         }
+        const all = name_to_g['⚡ ‍低延迟'].get('proxies').items
         for (const k of ['🇭🇰 ‍香港', '🇹🇼 ‍台湾', '🇸🇬 ‍新加坡', '🇯🇵 ‍日本', '🇺🇸 ‍美国', '🎏 ‍其他']) {
           if (!removed.has(k)) {
             const t = name_to_g[k].get('proxies').items
@@ -146,7 +146,7 @@ function cleanClash(clash, options = {}) {
       gs.splice(names.length)
     }
   }
-  if (removed.size) {
+  if (!(ps.length && options['mannixConfig']) && removed.size) {
     const rules = y.get('rules')?.items || []
     let i = 0
     for (const rule of rules) {
@@ -205,11 +205,11 @@ export default wrap(async (req, context) => {
     }
     const options = {}
     if (url.pathname === '/sub') {
-      if (!url.searchParams.get('config')) {
-        options['removeDuplicateGroups'] = true
-      }
       for (const [k, v] of DEFAULT_SEARCH_PARAMS) {
         if (!url.searchParams.get(k)) url.searchParams.set(k, await v())
+      }
+      if (/^https?:\/\/raw\.githubusercontent\.com\/zsokami\/ACL4SSR\/.*\/ACL4SSR_Online_(?:Full_)?Mannix\.ini/.test(url.searchParams.get('config'))) {
+        options['mannixConfig'] = true
       }
       if (url.searchParams.get('target') === 'clash') {
         options['type'] = url.searchParams.get('type')
@@ -220,9 +220,9 @@ export default wrap(async (req, context) => {
       const suburl = url.searchParams.get('url')
       if (suburl && !url.searchParams.get('filename') && !req.headers.get('accept')?.includes('text/html')) {
         let m
-        if (m = suburl.match(/^https?:\/\/raw.githubusercontent.com\/+([^/|]+)(?:\/+[^/|]+){2,}\/+([^/|]+)$/)) {
+        if (m = suburl.match(/^https?:\/\/raw\.githubusercontent\.com\/+([^/|]+)(?:\/+[^/|]+){2,}\/+([^/|]+)$/)) {
           url.searchParams.set('filename', m[1] === m[2] ? m[1] : m[1] + ' - ' + urlDecode(m[2]))
-        } else if (m = suburl.match(/^(https?:\/\/raw.githubusercontent.com\/+([^/|]+))(?:\/+[^/|]+){3,}(?:\|+\1(?:\/+[^/|]+){3,})*$/)) {
+        } else if (m = suburl.match(/^(https?:\/\/raw\.githubusercontent\.com\/+([^/|]+))(?:\/+[^/|]+){3,}(?:\|+\1(?:\/+[^/|]+){3,})*$/)) {
           url.searchParams.set('filename', m[2])
         } else if (m = suburl.match(/^(https?:\/\/([^:/?#|]+))(?:[:/?#][^|]*)?(?:\|+\1(?:[:/?#][^|]*)?)*$/)) {
           url.searchParams.set('filename', domainToUnicode(m[2]))
