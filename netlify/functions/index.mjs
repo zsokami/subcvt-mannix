@@ -72,10 +72,13 @@ function cleanClash(clash, options = {}) {
     const all = name_to_g['⚡ ‍低延迟']?.get('proxies').items
     if (options['removeDuplicateGroups'] && all !== undefined) {
       const cn = name_to_g['🇨🇳 ‍中国'].get('proxies').items
+      console.log('cn', cn)
       for (const k of ['🇭🇰 ‍香港', '🇹🇼 ‍台湾']) {
         const t = name_to_g[k].get('proxies').items
+        console.log(k, t)
         if (t.length !== 1 || t[0].value !== 'DIRECT') {
           if (cn.length === t.length) {
+            console.log('removed')
             removed.add('🇨🇳 ‍中国')
             removed.add('👆🏻🇨🇳 ‍中国')
           }
