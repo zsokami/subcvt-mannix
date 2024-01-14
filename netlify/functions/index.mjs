@@ -270,7 +270,7 @@ export default wrap(async (req, context) => {
     const elapsed = Date.now() - startTime
     console.log('elapsed:', elapsed)
     if (
-      elapsed < 6200 &&
+      elapsed < 6800 &&
       url.pathname === '/sub' &&
       url.searchParams.get('target') === 'clash'
     ) {
