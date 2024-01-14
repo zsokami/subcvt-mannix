@@ -34,6 +34,14 @@ const urlDecode = x => {
 }
 
 function cleanClash(clash, options = {}) {
+  let rulesStr = ''
+  if (options['localhost']) {
+    const i = clash.indexOf('\nrules:') + 1
+    if (i > 0) {
+      rulesStr = clash.substring(i)
+      clash = clash.substring(0, i)
+    }
+  }
   const y = YAML.parseDocument(clash, { version: '1.1' })
   console.time('in cleanClash')
   const re_type = options['type'] && new RegExp(`^(?:${options['type']})$`)
@@ -147,21 +155,26 @@ function cleanClash(clash, options = {}) {
     }
   }
   if (!(ps.length && options['mannixConfig']) && removed.size) {
-    const rules = y.get('rules')?.items || []
-    let i = 0
-    for (const rule of rules) {
-      if (!removed.has(rule.value.split(',')[2])) {
-        rules[i++] = rule
+    const rulesSeq = (rulesStr ? YAML.parseDocument(rulesStr, { version: '1.1' }) : y).get('rules')
+    if (rulesSeq) {
+      const rules = rulesSeq.items
+      let i = 0
+      for (const rule of rules) {
+        if (!removed.has(rule.value.split(',')[2])) {
+          rules[i++] = rule
+        }
       }
+      rules.splice(i)
+      y.set('rules', rulesSeq)
+      rulesStr = ''
     }
-    rules.splice(i)
   }
   console.timeEnd('in cleanClash')
   return y.toString({
     lineWidth: 0,
     indentSeq: false,
     flowCollectionPadding: false
-  })
+  }) + rulesStr.replaceAll('\n  ', '\n')
 }
 
 function wrap(handler) {
@@ -234,6 +247,7 @@ export default wrap(async (req, context) => {
     console.time('subconverter')
     let subconverter_process
     if (url.host === '127.0.0.1:25500') {
+      options['localhost'] = true
       url.protocol = 'http:'
       subconverter_process = spawn('subconverter/subconverter')
       await new Promise(resolve => {
