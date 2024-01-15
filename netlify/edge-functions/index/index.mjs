@@ -225,12 +225,12 @@ export default async (req, context) => {
       }
     }
     url.search = url.search.replace(/%2F/gi, '/')
-    console.time('subconverter')
-    const reqHeaders = { 'user-agent': req.headers.get('user-agent') }
+    console.log('prepare:', Date.now() - startTime)
+    const subconverterStartTime = Date.now()
     let status, headers, data
     if (url.host === originalHost) {
       options['localhost'] = true
-      const resp = await context.next(new Request(url, { headers: reqHeaders }))
+      const resp = await context.next(new Request(url, req))
       status = resp.status
       headers = Object.fromEntries(resp.headers)
       data = await resp.text()
@@ -240,18 +240,16 @@ export default async (req, context) => {
         throw e
       }
     } else {
-      ({ status, headers, data } = await axios(url.href, { headers: reqHeaders, responseType: 'text' }))
+      ({ status, headers, data } = await axios(url.href, { headers: { 'user-agent': req.headers.get('user-agent') }, responseType: 'text' }))
     }
-    console.timeEnd('subconverter')
-    const elapsed = Date.now() - startTime
-    console.log('elapsed:', elapsed)
+    console.log('subconverter:', Date.now() - subconverterStartTime)
     if (
       url.pathname === '/sub' &&
       url.searchParams.get('target') === 'clash'
     ) {
-      console.time('cleanClash')
+      const cleanClashStartTime = Date.now()
       data = cleanClash(data, options)
-      console.timeEnd('cleanClash')
+      console.log('cleanClash:', Date.now() - cleanClashStartTime)
     }
     return new Response(data, { status, headers: keep(headers, ...HEADER_KEYS) })
   } catch (e) {
