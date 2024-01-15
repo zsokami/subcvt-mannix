@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "axios": "https://esm.sh/axios",
+    "yaml": "https://esm.sh/yaml"
+  }
+}
