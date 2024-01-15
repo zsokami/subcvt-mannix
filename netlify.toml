@@ -1,2 +1,3 @@
 [functions]
   included_files = ["subconverter/**"]
+  deno_import_map = "deno.json"
