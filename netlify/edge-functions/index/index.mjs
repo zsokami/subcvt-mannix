@@ -1,4 +1,4 @@
-import { domainToUnicode } from 'node:url'
+import { domainToUnicode } from 'url'
 
 import axios from 'axios'
 import YAML from 'yaml'
@@ -240,7 +240,7 @@ export default async (req, context) => {
         throw e
       }
     } else {
-      ;({ status, headers, data }) = await axios(url.href, { headers: reqHeaders, responseType: 'text' })
+      ({ status, headers, data } = await axios(url.href, { headers: reqHeaders, responseType: 'text' }))
     }
     console.timeEnd('subconverter')
     const elapsed = Date.now() - startTime
