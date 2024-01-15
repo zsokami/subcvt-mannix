@@ -1,7 +1,7 @@
-import { domainToUnicode } from 'node:url'
-
 import axios from 'axios'
 import YAML from 'yaml'
+
+import { domainToUnicode } from 'node:url'
 
 import { getRawURL } from './github-api.mjs'
 import { urlDecode, keep } from './utils.mjs'
