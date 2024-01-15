@@ -1,4 +1,4 @@
-import { domainToUnicode } from 'url'
+import { domainToUnicode } from 'node:url'
 
 import axios from 'axios'
 import YAML from 'yaml'
