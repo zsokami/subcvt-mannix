@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios from 'npm:axios'
 
 const REPOS_API = axios.create({
   baseURL: 'https://api.github.com/repos/',

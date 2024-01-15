@@ -1,5 +1,5 @@
-import axios from 'axios'
-import YAML from 'yaml'
+import axios from 'npm:axios'
+import YAML from 'npm:yaml'
 
 import { domainToUnicode } from 'node:url'
 
