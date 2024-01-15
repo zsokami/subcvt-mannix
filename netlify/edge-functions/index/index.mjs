@@ -170,6 +170,7 @@ function cleanClash(clash, options = {}) {
 
 export default async (req, context) => {
   try {
+    console.log(req.url)
     const startTime = Date.now()
     const url = new URL(req.url)
     const originalHost = url.host
