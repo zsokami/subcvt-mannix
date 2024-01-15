@@ -1,14 +1,13 @@
-import { spawn } from 'child_process'
-import { brotliCompressSync, gzipSync } from 'zlib'
 import { domainToUnicode } from 'url'
 
 import axios from 'axios'
 import YAML from 'yaml'
 
 import { getRawURL } from './github-api.mjs'
+import { urlDecode, keep } from './utils.mjs'
 
 const SUBCONVERTERS = [
-  '127.0.0.1:25500',
+  'c.7.cr',
 ]
 
 const DEFAULT_SEARCH_PARAMS = [
@@ -19,19 +18,11 @@ const DEFAULT_SEARCH_PARAMS = [
   ['url', () => 'https://share.7.cr/base64']
 ]
 
-const HEADER_KEYS = new Set(['content-type', 'content-disposition', 'subscription-userinfo', 'profile-update-interval'])
+const HEADER_KEYS = ['content-type', 'content-disposition', 'subscription-userinfo', 'profile-update-interval']
 
 class SCError extends Error {}
 
 Object.getPrototypeOf(YAML.YAMLMap).maxFlowStringSingleLineLength = Infinity
-
-const urlDecode = x => {
-  x = x?.replaceAll('+', ' ') ?? ''
-  try {
-    x = decodeURIComponent(x)
-  } catch (ignored) {}
-  return x
-}
 
 function cleanClash(clash, options = {}) {
   let rulesStr = ''
@@ -177,21 +168,11 @@ function cleanClash(clash, options = {}) {
   }) + rulesStr.replaceAll('\n  ', '\n')
 }
 
-function wrap(handler) {
-  return async (req, context) => {
-    const { data = '', ...init } = await handler(req, context)
-    const [ce, fn] = req.headers.get('accept-encoding')?.match(/\bbr\b(?!\s*;\s*q=0(?:\.0*)?(?:,|$))/i)
-      ? ['br', brotliCompressSync] : ['gzip', gzipSync]
-    init.headers = init.headers ? Object.fromEntries(Object.entries(init.headers).filter(h => HEADER_KEYS.has(h[0]))) : {}
-    init.headers['content-encoding'] = ce
-    return new Response(fn(data), init)
-  }
-}
-
-export default wrap(async (req, context) => {
+export default async (req, context) => {
   try {
     const startTime = Date.now()
     const url = new URL(req.url)
+    const originalHost = url.host
     let suburlmatch = url.search.match(/[?&][^&=]*(:|%3A)/i)
     if (suburlmatch) {
       const sub = url.search.substring(suburlmatch.index + 1)
@@ -245,32 +226,26 @@ export default wrap(async (req, context) => {
     }
     url.search = url.search.replace(/%2F/gi, '/')
     console.time('subconverter')
-    let subconverter_process
-    if (url.host === '127.0.0.1:25500') {
+    const reqHeaders = { 'user-agent': req.headers.get('user-agent') }
+    let status, headers, data
+    if (url.host === originalHost) {
       options['localhost'] = true
-      url.protocol = 'http:'
-      subconverter_process = spawn('subconverter/subconverter')
-      await new Promise(resolve => {
-        subconverter_process.stderr.on('data', function listener(data) {
-          if (data.includes('Startup completed')) {
-            resolve()
-            subconverter_process.stderr.off('data', listener)
-          }
-        })
-      })
-    }
-    let { status, headers, data } = await axios.get(url.href, {
-      headers: { 'user-agent': req.headers.get('user-agent') },
-      responseType: 'text'
-    })
-    if (url.host === '127.0.0.1:25500') {
-      subconverter_process.kill()
+      const resp = await context.next(new Request(url, { headers: reqHeaders }))
+      status = resp.status
+      headers = Object.fromEntries(resp.headers)
+      data = await resp.text()
+      if (!resp.ok) {
+        const e = new Error()
+        e.response = { status, headers, data }
+        throw e
+      }
+    } else {
+      ;({ status, headers, data }) = await axios(url.href, { headers: reqHeaders, responseType: 'text' })
     }
     console.timeEnd('subconverter')
     const elapsed = Date.now() - startTime
     console.log('elapsed:', elapsed)
     if (
-      elapsed < 7000 &&
       url.pathname === '/sub' &&
       url.searchParams.get('target') === 'clash'
     ) {
@@ -278,17 +253,17 @@ export default wrap(async (req, context) => {
       data = cleanClash(data, options)
       console.timeEnd('cleanClash')
     }
-    return { data, status, headers }
+    return new Response(data, { status, headers: keep(headers, ...HEADER_KEYS) })
   } catch (e) {
     const response = e?.response
     if (response) {
       let { status, headers, data } = response
       if (typeof data !== 'string') data = JSON.stringify(data)
-      return { data, status, headers }
+      return new Response(data, { status, headers: keep(headers, 'content-type') })
     }
-    return { data: String(e), status: e instanceof SCError ? 400 : 500, headers: { 'content-type': 'text/plain;charset=utf-8' } }
+    return new Response(String(e), { status: e instanceof SCError ? 400 : 500, headers: { 'content-type': 'text/plain;charset=utf-8' } })
   }
-})
+}
 
 export const config = {
   path: '/*'
