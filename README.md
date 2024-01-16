@@ -6,6 +6,7 @@
 
 - 移除无节点的分组
 - 移除错误 uuid 的节点
+- 确保 h2 / grpc 的 tls 为 true
 - 对 grpc-service-name 进行 URL 解码
 - 节点类型筛选（使用正则表达式）：
   - `type=ssr?|vmess|trojan` 匹配 ss / ssr / vmess / trojan 节点
