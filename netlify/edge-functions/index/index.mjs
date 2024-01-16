@@ -47,8 +47,11 @@ function cleanClash(clash, options = {}) {
       && (!re_type || re_type.test(type))
       && (!re_type_not || !re_type_not.test(type))
     ) {
-      const network = p.get('network')
-      if (network === 'h2' || network === 'grpc') {
+      let v
+      if (
+        ((v = p.get('type')) === 'vmess' || v === 'vless')
+        && ((v = p.get('network')) === 'h2' || network === 'grpc')
+      ) {
         p.set('tls', true)
       }
       const grpc_service_name = p.getIn(['grpc-opts', 'grpc-service-name'], true)
