@@ -50,7 +50,7 @@ function cleanClash(clash, options = {}) {
       let v
       if (
         ((v = p.get('type')) === 'vmess' || v === 'vless')
-        && ((v = p.get('network')) === 'h2' || network === 'grpc')
+        && ((v = p.get('network')) === 'h2' || v === 'grpc')
       ) {
         p.set('tls', true)
       }
