@@ -25,8 +25,9 @@ class SCError extends Error {}
 Object.getPrototypeOf(YAML.YAMLMap).maxFlowStringSingleLineLength = Infinity
 
 function cleanClash(clash, options = {}) {
+  const localhost = options['localhost']
   let rulesStr = ''
-  if (options['localhost']) {
+  if (localhost) {
     const i = clash.indexOf('\nrules:') + 1
     if (i > 0) {
       rulesStr = clash.substring(i)
@@ -54,8 +55,8 @@ function cleanClash(clash, options = {}) {
       ) {
         p.set('tls', true)
       }
-      const grpc_service_name = p.getIn(['grpc-opts', 'grpc-service-name'], true)
-      if (grpc_service_name !== undefined) {
+      let grpc_service_name
+      if (!localhost && (grpc_service_name = p.getIn(['grpc-opts', 'grpc-service-name'], true)) !== undefined) {
         try {
           grpc_service_name.value = urlDecode(grpc_service_name.value)
           if (grpc_service_name.type === 'PLAIN' && grpc_service_name.value.includes('?')) {
