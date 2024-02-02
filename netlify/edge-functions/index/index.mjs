@@ -129,16 +129,18 @@ function cleanClash(clash, options = {}) {
             }
           }
         }
-        const all = name_to_g['⚡ ‍低延迟'].get('proxies').items
-        for (const k of ['🇭🇰 ‍香港', '🇹🇼 ‍台湾', '🇸🇬 ‍新加坡', '🇯🇵 ‍日本', '🇺🇸 ‍美国', '🎏 ‍其他']) {
-          if (!removed.has(k)) {
-            const t = name_to_g[k].get('proxies').items
-            if (all.length === t.length) {
-              removed.add(k)
-              removed.add('👆🏻' + k)
-              rm = true
+        if (!removed.has('⚡ ‍低延迟')) {
+          const all = name_to_g['⚡ ‍低延迟'].get('proxies').items
+          for (const k of ['🇭🇰 ‍香港', '🇹🇼 ‍台湾', '🇸🇬 ‍新加坡', '🇯🇵 ‍日本', '🇺🇸 ‍美国', '🎏 ‍其他']) {
+            if (!removed.has(k)) {
+              const t = name_to_g[k].get('proxies').items
+              if (all.length === t.length) {
+                removed.add(k)
+                removed.add('👆🏻' + k)
+                rm = true
+              }
+              break
             }
-            break
           }
         }
         if (rm) {
