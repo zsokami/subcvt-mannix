@@ -35,18 +35,32 @@ function cleanClash(clash, options = {}) {
     }
   }
   const y = YAML.parseDocument(clash, { version: '1.1' })
-  const re_type = options['type'] && new RegExp(`^(?:${options['type']})$`)
-  const re_type_not = options['type!'] && new RegExp(`^(?:${options['type!']})$`)
+  for (const _k of ['type', 'cipher']) {
+    for (const k of [_k, _k + '!']) {
+      options[k] && (options[k] = new RegExp(options[k]) && new RegExp(`^(?:${options[k]})$`))
+    }
+  }
+  const {
+    'type': re_type,
+    'type!': re_type_not,
+    'cipher': re_cipher,
+    'cipher!': re_cipher_not,
+  } = options
   const removed = new Set()
   const ps = y.get('proxies')?.items || []
   let i = 0
   for (const p of ps) {
     const uuid = p.get('uuid')
     const type = p.get('type')
+    const cipher = p.get('cipher')
     if (
       (uuid === undefined || /^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i.test(uuid))
       && (!re_type || re_type.test(type))
       && (!re_type_not || !re_type_not.test(type))
+      && (!cipher || (
+        (!re_cipher || re_cipher.test(cipher))
+        && (!re_cipher_not || !re_cipher_not.test(cipher))
+      ))
     ) {
       let v
       if (
@@ -213,10 +227,12 @@ export default async (req, context) => {
         options['mannixConfig'] = true
       }
       if (url.searchParams.get('target') === 'clash') {
-        options['type'] = url.searchParams.get('type')
-        options['type!'] = url.searchParams.get('type!')
-        url.searchParams.delete('type')
-        url.searchParams.delete('type!')
+        for (const _k of ['type', 'cipher']) {
+          for (const k of [_k, _k + '!']) {
+            options[k] = url.searchParams.get(k)
+            url.searchParams.delete(k)
+          }
+        }
       }
       const suburl = url.searchParams.get('url')
       if (suburl && !url.searchParams.get('filename') && !req.headers.get('accept')?.includes('text/html')) {

@@ -8,10 +8,12 @@
 - 移除错误 uuid 的节点
 - 确保 h2 / grpc 的 tls 为 true
 - 对 grpc-service-name 进行 URL 解码
-- 节点类型筛选（使用正则表达式）：
+- 节点 type 和 cipher 筛选（使用正则表达式）：
   - `type=ssr?|vmess|trojan` 匹配 ss / ssr / vmess / trojan 节点
   - `type!=hysteria2?` 排除 hysteria / hysteria2 节点
   - `type!=vless|hysteria2?` 排除 vless / hysteria / hysteria2  节点
+  - `cipher=...`
+  - `cipher!=...`
 
 默认 /sub 路径，默认转为 clash 订阅
 
