@@ -223,7 +223,9 @@ function handleSNIAndHost(y, p, sniKey, sni) {
   let v
   if (sni) {
     if (v = p.get(sniKey, true)) {
-      p.deleteIn(['ws-opts', 'headers'])
+      try {
+        p.deleteIn(['ws-opts', 'headers'])
+      } catch (ignored) {}
       if (sni === 'd') {
         p.delete(sniKey)
       } else {
