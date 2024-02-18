@@ -45,6 +45,7 @@ function cleanClash(clash, options = {}) {
     'type!': re_type_not,
     'cipher': re_cipher,
     'cipher!': re_cipher_not,
+    'sni': sni,
   } = options
   const removed = new Set()
   const ps = y.get('proxies')?.items || []
@@ -63,11 +64,29 @@ function cleanClash(clash, options = {}) {
       ))
     ) {
       let v
-      if (
-        ((v = p.get('type')) === 'vmess' || v === 'vless')
-        && ((v = p.get('network')) === 'h2' || v === 'grpc')
-      ) {
-        p.set('tls', true)
+      switch (type) {
+        case 'ss':
+          if (sni && (v = p.get('plugin-opts'))) {
+            handleSNI(v, 'host', sni)
+          }
+          break
+        case 'ssr':
+          handleSNI(p, 'obfs-param', sni)
+          break
+        case 'vmess':
+        case 'vless':
+          handleSNIAndHost(y, p, 'servername', sni)
+          if ((v = p.get('network')) === 'h2' || v === 'grpc') {
+            p.set('tls', true)
+          }
+          break
+        case 'trojan':
+          handleSNIAndHost(y, p, 'sni', sni)
+          break
+        case 'hysteria':
+        case 'hysteria2':
+          handleSNI(p, 'sni', sni)
+          break
       }
       let grpc_service_name
       if (!localhost && (grpc_service_name = p.getIn(['grpc-opts', 'grpc-service-name'], true)) !== undefined) {
@@ -190,6 +209,45 @@ function cleanClash(clash, options = {}) {
   }) + rulesStr.replaceAll('\n  ', '\n')
 }
 
+function handleSNI(p, sniKey, sni) {
+  if (sni) {
+    if (sni === 'd') {
+      p.delete(sniKey)
+    } else {
+      p.set(sniKey, sni)
+    }
+  }
+}
+
+function handleSNIAndHost(y, p, sniKey, sni) {
+  let v
+  if (sni) {
+    if (v = p.get(sniKey, true)) {
+      p.deleteIn(['ws-opts', 'headers'])
+      if (sni === 'd') {
+        p.delete(sniKey)
+      } else {
+        v.value = sni
+      }
+    } else if (v = p.get('ws-opts')) {
+      if (sni === 'd') {
+        v.delete('headers')
+      } else {
+        const headers = v.get('headers')
+        if (headers) {
+          headers.set('Host', sni)
+        } else {
+          v.set('headers', y.createNode({ 'Host': sni }))
+        }
+      }
+    } else {
+      if (sni !== 'd') {
+        p.set(sniKey, sni)
+      }
+    }
+  }
+}
+
 export default async (req, context) => {
   try {
     const startTime = Date.now()
@@ -229,11 +287,9 @@ export default async (req, context) => {
         options['mannixConfig'] = true
       }
       if (url.searchParams.get('target') === 'clash') {
-        for (const _k of ['type', 'cipher']) {
-          for (const k of [_k, _k + '!']) {
-            options[k] = url.searchParams.get(k)
-            url.searchParams.delete(k)
-          }
+        for (const k of ['type', 'type!', 'cipher', 'cipher!', 'sni']) {
+          options[k] = url.searchParams.get(k)
+          url.searchParams.delete(k)
         }
       }
       const suburl = url.searchParams.get('url')

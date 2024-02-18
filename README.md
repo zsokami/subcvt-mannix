@@ -14,6 +14,9 @@
   - `type!=vless|hysteria2?` 排除 vless / hysteria / hysteria2  节点
   - `cipher=...`
   - `cipher!=...`
+- 支持修改 sni/servername/Host/host：
+  - `sni={域名}` 修改所有节点的 sni/servername/Host/host
+  - `sni=d` 删除所有节点的 sni/servername/Host/host
 
 默认 /sub 路径，默认转为 clash 订阅
 
