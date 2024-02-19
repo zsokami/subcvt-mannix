@@ -181,7 +181,7 @@ function cleanClash(clash, options = {}) {
           }
         }
         if (rm) {
-          const gs_select = ['✈️ ‍起飞', '📺 ‍B站', '🤖 ‍OpenAI+Bing']
+          const gs_select = ['✈️ ‍起飞', '📺 ‍B站', '🤖 ‍AI']
           let i = 0
           for (const name of names) {
             if (!removed.has(name)) {
