@@ -35,9 +35,21 @@ function cleanClash(clash, options = {}) {
     }
   }
   const y = YAML.parseDocument(clash, { version: '1.1' })
-  for (const _k of ['type', 'cipher']) {
-    for (const k of [_k, _k + '!']) {
-      options[k] && (options[k] = new RegExp(options[k]) && new RegExp(`^(?:${options[k]})$`))
+  for (const k of ['type', 'type!', 'cipher', 'cipher!']) {
+    options[k] && (options[k] = new RegExp(options[k]) && new RegExp(`^(?:${options[k]})$`))
+  }
+  for (const k of ['sni']) {
+    if (options[k]) {
+      options[k] = options[k].split(',').flatMap(x => {
+        x = x.trim()
+        if (!x) return []
+        x = x.split('@')
+        if (x.length === 1) x.unshift(/^/)
+        else x[0] = new RegExp(x[0])
+        x[1] = x[1].split('|')
+        x[2] = 0
+        return [x]
+      })
     }
   }
   const {
@@ -45,7 +57,7 @@ function cleanClash(clash, options = {}) {
     'type!': re_type_not,
     'cipher': re_cipher,
     'cipher!': re_cipher_not,
-    'sni': sni,
+    'sni': server_sni_pairs,
   } = options
   const removed = new Set()
   const ps = y.get('proxies')?.items || []
@@ -64,6 +76,7 @@ function cleanClash(clash, options = {}) {
       ))
     ) {
       let v
+      const sni = findSNIByServer(server_sni_pairs, p)
       switch (type) {
         case 'ss':
           if (sni && (v = p.get('plugin-opts'))) {
@@ -207,6 +220,22 @@ function cleanClash(clash, options = {}) {
     indentSeq: false,
     flowCollectionPadding: false
   }) + rulesStr.replaceAll('\n  ', '\n')
+}
+
+function findSNIByServer(server_sni_pairs, p) {
+  if (!server_sni_pairs) return undefined
+  return findNextValueByKey(server_sni_pairs, p.get('server'))
+}
+
+function findNextValueByKey(pairs, k) {
+  for (const pair of pairs) {
+    if (pair[0].test(k)) {
+      const [_, arr, i] = pair
+      pair[2] = (i + 1) % arr.length
+      return arr[i]
+    }
+  }
+  return undefined
 }
 
 function handleSNI(p, sniKey, sni) {
