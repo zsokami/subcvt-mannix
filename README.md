@@ -18,7 +18,7 @@
   - `sni={域名}` 修改所有节点的 sni/servername/Host/host
   - `sni=d` 删除所有节点的 sni/servername/Host/host
   - `sni={sni1}|{sni2}|{sni3}` 依次设置为 sni1 sni2 sni3 sni1...
-  - `sni={server1}@{sni1},{server2}@{sni2}|{sni3},{server3}@d,{sni4}` 给不同 server 设置不同 sni（server 使用部分匹配的正则表达式）
+  - `sni={server1}@{sni1},{server2}@{sni2}|{sni3}|d,{sni4}` 给不同 server 设置不同 sni（server 使用部分匹配的正则表达式）
 
 默认 /sub 路径，默认转为 clash 订阅
 
