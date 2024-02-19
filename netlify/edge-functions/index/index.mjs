@@ -38,7 +38,7 @@ function cleanClash(clash, options = {}) {
   for (const k of ['type', 'type!', 'cipher', 'cipher!']) {
     options[k] && (options[k] = new RegExp(options[k]) && new RegExp(`^(?:${options[k]})$`))
   }
-  for (const k of ['sni']) {
+  for (const k of ['sni', 'server']) {
     if (options[k]) {
       options[k] = options[k].split(',').flatMap(x => {
         x = x.trim()
@@ -58,6 +58,7 @@ function cleanClash(clash, options = {}) {
     'cipher': re_cipher,
     'cipher!': re_cipher_not,
     'sni': server_sni_pairs,
+    'server': sni_server_pairs,
   } = options
   const removed = new Set()
   const ps = y.get('proxies')?.items || []
@@ -77,6 +78,10 @@ function cleanClash(clash, options = {}) {
     ) {
       let v
       const sni = findSNIByServer(server_sni_pairs, p)
+      const server = findServerBySNI(sni_server_pairs, p)
+      if (server) {
+        p.set('server', server)
+      }
       switch (type) {
         case 'ss':
           if (sni && (v = p.get('plugin-opts'))) {
@@ -227,6 +232,29 @@ function findSNIByServer(server_sni_pairs, p) {
   return findNextValueByKey(server_sni_pairs, p.get('server'))
 }
 
+function findServerBySNI(sni_server_pairs, p) {
+  if (!sni_server_pairs) return undefined
+  return findNextValueByKey(sni_server_pairs, getSNI(p))
+}
+
+function getSNI(p) {
+  switch (p.get('type')) {
+    case 'ss':
+      return p.getIn(['plugin-opts', 'host'])
+    case 'ssr':
+      return p.get('obfs-param')
+    case 'vmess':
+    case 'vless':
+      return p.get('servername') || p.getIn(['ws-opts', 'headers', 'Host'])
+    case 'trojan':
+      return p.get('sni') || p.getIn(['ws-opts', 'headers', 'Host'])
+    case 'hysteria':
+    case 'hysteria2':
+      return p.get('sni')
+  }
+  return undefined
+}
+
 function findNextValueByKey(pairs, k) {
   for (const pair of pairs) {
     if (pair[0].test(k)) {
@@ -318,7 +346,7 @@ export default async (req, context) => {
         options['mannixConfig'] = true
       }
       if (url.searchParams.get('target') === 'clash') {
-        for (const k of ['type', 'type!', 'cipher', 'cipher!', 'sni']) {
+        for (const k of ['type', 'type!', 'cipher', 'cipher!', 'sni', 'server']) {
           options[k] = url.searchParams.get(k)
           url.searchParams.delete(k)
         }
