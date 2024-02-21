@@ -311,6 +311,7 @@ export default async (req, context) => {
   try {
     const startTime = Date.now()
     const url = new URL(req.url)
+    url.search = url.searchParams
     const originalHost = url.host
     let suburlmatch = url.search.match(/[?&][^&=]*(:|%3A)/i)
     if (suburlmatch) {
