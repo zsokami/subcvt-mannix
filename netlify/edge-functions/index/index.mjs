@@ -4,7 +4,7 @@ import axios from 'axios'
 import YAML from 'yaml'
 
 import { getRawURL } from './github-api.mjs'
-import { urlDecode, keep } from './utils.mjs'
+import { urlDecode, pick } from './utils.ts'
 
 const SUBCONVERTERS = [
   'c.7.cr',
@@ -391,13 +391,13 @@ export default async (req, context) => {
       data = cleanClash(data, options)
       console.log('cleanClash:', Date.now() - cleanClashStartTime)
     }
-    return new Response(data, { status, headers: keep(headers, ...HEADER_KEYS) })
+    return new Response(data, { status, headers: pick(headers, ...HEADER_KEYS) })
   } catch (e) {
     const response = e?.response
     if (response) {
       let { status, headers, data } = response
       if (typeof data !== 'string') data = JSON.stringify(data)
-      return new Response(data, { status, headers: keep(headers, 'content-type') })
+      return new Response(data, { status, headers: pick(headers, 'content-type') })
     }
     return new Response(String(e), { status: e instanceof SCError ? 400 : 500, headers: { 'content-type': 'text/plain;charset=utf-8' } })
   }

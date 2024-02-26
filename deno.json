@@ -1,7 +1,7 @@
 {
   "imports": {
     "url": "node:url",
-    "axios": "https://esm.sh/axios",
-    "yaml": "https://esm.sh/yaml"
+    "axios": "https://esm.sh/axios@^1.6.7",
+    "yaml": "https://esm.sh/yaml@^2.4.0"
   }
 }
