@@ -7,7 +7,7 @@ import { getRawURL } from './github-api.mjs'
 import { urlDecode, pick } from './utils.ts'
 
 const SUBCONVERTERS = [
-  'c.7.cr',
+  'scs.f5.si',
 ]
 
 const DEFAULT_SEARCH_PARAMS = [
@@ -15,7 +15,7 @@ const DEFAULT_SEARCH_PARAMS = [
   ['udp', () => 'true'],
   ['scv', () => 'true'],
   ['config', () => getRawURL('zsokami/ACL4SSR', 'ACL4SSR_Online_Full_Mannix.ini')],
-  ['url', () => 'https://share.7.cr/base64']
+  ['url', () => 'https://fetch.f5.si/base64']
 ]
 
 const HEADER_KEYS = ['content-type', 'content-disposition', 'subscription-userinfo', 'profile-update-interval']
