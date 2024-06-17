@@ -6,9 +6,7 @@ import YAML from 'yaml'
 import { getRawURL } from './github-api.mjs'
 import { urlDecode, pick } from './utils.ts'
 
-const SUBCONVERTERS = [
-  'scs.f5.si',
-]
+const SUBCONVERTERS = []
 
 const DEFAULT_SEARCH_PARAMS = [
   ['target', () => 'clash'],
@@ -323,7 +321,7 @@ export default async (req, context) => {
     const path = pathstr.split('/').filter(x => x)
     if (path[0]?.includes('.') && !path[0].includes('%')) {
       url.host = path.shift()
-    } else {
+    } else if (SUBCONVERTERS.length) {
       url.host = SUBCONVERTERS[(Math.random() * SUBCONVERTERS.length) | 0]
     }
     if (!path.length) {
