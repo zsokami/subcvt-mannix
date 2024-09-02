@@ -13,7 +13,6 @@ const DEFAULT_SEARCH_PARAMS = [
   ['udp', () => 'true'],
   ['scv', () => 'true'],
   ['config', () => getRawURL('zsokami/ACL4SSR', 'ACL4SSR_Online_Full_Mannix.ini')],
-  ['url', () => 'https://fetch.f5.si/base64']
 ]
 
 const HEADER_KEYS = ['content-type', 'content-disposition', 'subscription-userinfo', 'profile-update-interval']
@@ -320,6 +319,9 @@ export default async (req, context) => {
     const pathstr = url.pathname
     const path = pathstr.split('/').filter(x => x)
     if (path[0]?.includes('.') && !path[0].includes('%')) {
+      if (path[0].endsWith('.ico')) {
+        return new Response(null, { status: 404 })
+      }
       url.host = path.shift()
     } else if (SUBCONVERTERS.length) {
       url.host = SUBCONVERTERS[(Math.random() * SUBCONVERTERS.length) | 0]
@@ -338,6 +340,9 @@ export default async (req, context) => {
     }
     const options = {}
     if (url.pathname === '/sub') {
+      if (!url.searchParams.get('url')) {
+        return new Response(null, { status: 400 })
+      }
       for (const [k, v] of DEFAULT_SEARCH_PARAMS) {
         if (!url.searchParams.get(k)) url.searchParams.set(k, await v())
       }
