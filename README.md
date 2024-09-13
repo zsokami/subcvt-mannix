@@ -33,9 +33,10 @@
 
 url 参数快捷方式
 
-- `https://scmx.cc/{原订阅链接}`（原订阅链接需 URL 编码）
-- `https://scmx.cc/?{原订阅链接}`（原订阅链接无需 URL 编码，但如果存在 # 字符则必须编码，否则会被截断）
-- `https://scmx.cc?config={远程配置}&{原订阅链接}`（同上）
+- `https://scmx.cc/{原订阅链接}`
+- `https://scmx.cc/{后端地址}/{原订阅链接}`（原订阅链接需 URL 编码）
+- ~~`https://scmx.cc/?{原订阅链接}`~~（原订阅链接无需 URL 编码，但如果存在 # 字符则必须编码，否则会被截断）
+- ~~`https://scmx.cc?config={远程配置}&{原订阅链接}`~~（同上）
 
 github raw url 快捷方式
 

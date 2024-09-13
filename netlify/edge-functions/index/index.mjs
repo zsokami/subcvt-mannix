@@ -15,6 +15,14 @@ const DEFAULT_SEARCH_PARAMS = [
   ['config', () => getRawURL('zsokami/ACL4SSR', 'ACL4SSR_Online_Full_Mannix.ini')],
 ]
 
+const SC_PARAM_KEYS = new Set([
+  'target', 'ver', 'new_name', 'url', 'group', 'upload_path', 'include', 'exclude', 'groups', 'ruleset',
+  'config', 'dev_id', 'filename', 'interval', 'strict', 'rename', 'filter_script', 'upload', 'emoji',
+  'add_emoji', 'remove_emoji', 'append_type', 'tfo', 'udp', 'list', 'sort', 'sort_script', 'script', 'insert',
+  'scv', 'fdn', 'expand', 'append_info', 'prepend', 'classic', 'tls13', 'profile_data',
+  'type', 'type!', 'cipher', 'cipher!', 'sni', 'server',
+])
+
 const HEADER_KEYS = ['content-type', 'content-disposition', 'subscription-userinfo', 'profile-update-interval']
 
 class SCError extends Error {}
@@ -334,7 +342,15 @@ export default async (req, context) => {
       url.searchParams.set('url', await getRawURL(path))
     } else if (suburlmatch = pathstr.match(/[^/]*(?::|%3A)(?:\/|%2F).*/i)) {
       url.pathname = 'sub'
-      url.searchParams.set('url', urlDecode(suburlmatch[0]))
+      const suburl = new URL(urlDecode(suburlmatch[0]))
+      if (url.host === originalHost) {
+        const kvsToMove = [...url.searchParams.entries().filter(([k]) => !SC_PARAM_KEYS.has(k))]
+        for (const [k, v] of kvsToMove) {
+          suburl.searchParams.set(k, v)
+          url.searchParams.delete(k)
+        }
+      }
+      url.searchParams.set('url', suburl.href)
     } else {
       url.pathname = path.join('/')
     }
