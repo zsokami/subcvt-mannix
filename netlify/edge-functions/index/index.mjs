@@ -340,7 +340,7 @@ export default async (req, context) => {
       url.pathname = 'sub'
       path.shift()
       url.searchParams.set('url', await getRawURL(path))
-    } else if (suburlmatch = pathstr.match(/[^/]*(?::|%3A)(?:\/|%2F).*/i)) {
+    } else if (suburlmatch = pathstr.match(/[^/]*(?::|%3A)(?:\/|%7C|%2F).*/i)) {
       url.pathname = 'sub'
       const suburlstr = suburlmatch[0]
       if (url.host === originalHost && /^https?:(?!.*(?:\||%3F))/i.test(suburlstr)) {
