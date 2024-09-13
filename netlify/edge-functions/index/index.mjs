@@ -340,10 +340,10 @@ export default async (req, context) => {
       url.pathname = 'sub'
       path.shift()
       url.searchParams.set('url', await getRawURL(path))
-    } else if (suburlmatch = pathstr.match(/[^/]*(?::|%3A)(?:\/|%7C|%2F).*/i)) {
+    } else if (suburlmatch = pathstr.match(/[^/]*(?::|%3A)(?:\/|%2F).*/i)) {
       url.pathname = 'sub'
       const suburlstr = suburlmatch[0]
-      if (url.host === originalHost && /^https?:(?!.*(?:\||%3F))/i.test(suburlstr)) {
+      if (url.host === originalHost && /^https?:(?!.*(?:\||%7C|%3F))/i.test(suburlstr)) {
         const suburl = new URL(suburlstr)
         const kvsToMove = [...url.searchParams.entries().filter(([k]) => !SC_PARAM_KEYS.has(k))]
         for (const [k, v] of kvsToMove) {
