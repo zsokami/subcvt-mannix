@@ -342,15 +342,18 @@ export default async (req, context) => {
       url.searchParams.set('url', await getRawURL(path))
     } else if (suburlmatch = pathstr.match(/[^/]*(?::|%3A)(?:\/|%2F).*/i)) {
       url.pathname = 'sub'
-      const suburl = new URL(urlDecode(suburlmatch[0]))
-      if (url.host === originalHost) {
+      const suburlstr = suburlmatch[0]
+      if (url.host === originalHost && /^https?:(?!.*(?:\||%3F))/i.test(suburlstr)) {
+        const suburl = new URL(suburlstr)
         const kvsToMove = [...url.searchParams.entries().filter(([k]) => !SC_PARAM_KEYS.has(k))]
         for (const [k, v] of kvsToMove) {
           suburl.searchParams.set(k, v)
           url.searchParams.delete(k)
         }
+        url.searchParams.set('url', suburl.href)
+      } else {
+        url.searchParams.set('url', urlDecode(suburlstr))
       }
-      url.searchParams.set('url', suburl.href)
     } else {
       url.pathname = path.join('/')
     }
