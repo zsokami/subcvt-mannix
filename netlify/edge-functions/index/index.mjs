@@ -66,6 +66,7 @@ function cleanClash(clash, options = {}) {
     'server': sni_server_pairs,
   } = options
   const removed = new Set()
+  const remapped = new Map()
   const ps = y.get('proxies')?.items || []
   let i = 0
   for (const p of ps) {
@@ -187,10 +188,8 @@ function cleanClash(clash, options = {}) {
         }
         if (rm) {
           const gs_select = ['✈️ ‍起飞', '📺 ‍B站', '🤖 ‍AI']
-          let i = 0
           for (const name of names) {
             if (!removed.has(name)) {
-              names[i++] = name
               if (gs_select.includes(name)) {
                 const _names = name_to_g[name].get('proxies').items
                 let j = 0
@@ -203,8 +202,27 @@ function cleanClash(clash, options = {}) {
               }
             }
           }
-          names.splice(i)
         }
+        {
+          const _names = name_to_g['📺 ‍B站'].get('proxies').items
+          if (_names.length === 1) {
+            removed.add('📺 ‍B站')
+            remapped.set('📺 ‍B站', _names[0].value)
+          }
+        }
+        {
+          const _names = name_to_g['🤖 ‍AI'].get('proxies').items
+          if (_names.length === 1) {
+            removed.add('🤖 ‍AI')
+          }
+        }
+        let i = 0
+        for (const name of names) {
+          if (!removed.has(name)) {
+            names[i++] = name
+          }
+        }
+        names.splice(i)
       }
       names.forEach((name, i) => (gs[i] = name_to_g[name]))
       gs.splice(names.length)
@@ -216,8 +234,17 @@ function cleanClash(clash, options = {}) {
       const rules = rulesSeq.items
       let i = 0
       for (const rule of rules) {
-        if (!removed.has(rule.value.split(',')[2])) {
+        const split = rule.value.split(',')
+        const name = split[2]
+        if (!removed.has(name)) {
           rules[i++] = rule
+        } else {
+          const remap = remapped.get(name)
+          if (remap !== undefined) {
+            split[2] = remap
+            rule.value = split.join(',')
+            rules[i++] = rule
+          }
         }
       }
       rules.splice(i)
