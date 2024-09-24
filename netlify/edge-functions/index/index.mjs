@@ -16,7 +16,7 @@ const DEFAULT_SEARCH_PARAMS = [
 ]
 
 const SC_PARAM_KEYS = new Set([
-  'target', 'ver', 'new_name', 'url', 'group', 'upload_path', 'include', 'exclude', 'groups', 'ruleset',
+  'target', 'ver', 'new_name', 'group', 'upload_path', 'include', 'exclude', 'groups', 'ruleset',
   'config', 'dev_id', 'filename', 'interval', 'strict', 'rename', 'filter_script', 'upload', 'emoji',
   'add_emoji', 'remove_emoji', 'append_type', 'tfo', 'udp', 'list', 'sort', 'sort_script', 'script', 'insert',
   'scv', 'fdn', 'expand', 'append_info', 'prepend', 'classic', 'tls13', 'profile_data',
