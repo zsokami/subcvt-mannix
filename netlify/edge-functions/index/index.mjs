@@ -86,7 +86,7 @@ function cleanClash(clash, options = {}) {
   }
   const testurl = options['testurl']
   const testinterval = parseInt(options['testinterval'])
-  const tolerance = parseInt(options['tolerance'])
+  const tolerance = !gtype || gtype === 'url-test' ? parseInt(options['tolerance']) : NaN
 
   const removed = new Set()
   const remapped = new Map()
@@ -263,12 +263,16 @@ function cleanClash(clash, options = {}) {
     for (const g of gs) {
       const type = g.get('type', true)
       if (!AUTO_GROUP_TYPES.has(type.value)) continue
-      if (gtype) {
+      if (gtype && gtype !== type.value) {
         if (LOAD_BALANCE_STRATEGIES.has(gtype)) {
           type.value = 'load-balance'
           g.set('strategy', gtype)
         } else {
           type.value = gtype
+          g.delete('strategy')
+        }
+        if (gtype !== 'url-test') {
+          g.delete('tolerance')
         }
       }
       if (testurl) {
@@ -277,7 +281,7 @@ function cleanClash(clash, options = {}) {
       if (testinterval) {
         g.set('interval', testinterval)
       }
-      if (tolerance) {
+      if (!isNaN(tolerance) && type.value === 'url-test') {
         g.set('tolerance', tolerance)
       }
     }
