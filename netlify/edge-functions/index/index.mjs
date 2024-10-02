@@ -21,7 +21,19 @@ const SC_PARAM_KEYS = new Set([
   'add_emoji', 'remove_emoji', 'append_type', 'tfo', 'udp', 'list', 'sort', 'sort_script', 'script', 'insert',
   'scv', 'fdn', 'expand', 'append_info', 'prepend', 'classic', 'tls13', 'profile_data',
   'type', 'type!', 'cipher', 'cipher!', 'sni', 'server',
+  'gtype', 'strategy', 'testurl', 'testinterval', 'tolerance',
 ])
+
+const AUTO_GROUP_TYPE_TO_NAME = {
+  'url-test': '⚡ ‍低延迟',
+  'fallback': '✅ ‍自动切换',
+  'load-balance': '⚖️ ‍负载均衡',
+  'consistent-hashing': '⚖️ ‍负载均衡',
+  'round-robin': '🔃 ‍循环',
+  'sticky-sessions': '🥂 ‍黏性会话',
+}
+const AUTO_GROUP_TYPES = new Set(Object.keys(AUTO_GROUP_TYPE_TO_NAME))
+const LOAD_BALANCE_STRATEGIES = new Set(['consistent-hashing', 'round-robin', 'sticky-sessions'])
 
 const HEADER_KEYS = ['content-type', 'content-disposition', 'subscription-userinfo', 'profile-update-interval']
 
@@ -65,6 +77,17 @@ function cleanClash(clash, options = {}) {
     'sni': server_sni_pairs,
     'server': sni_server_pairs,
   } = options
+
+  const gtype = options['strategy'] || options['gtype']
+  if (gtype) {
+    if (!AUTO_GROUP_TYPES.has(gtype)) {
+      throw new SCError(`gtype/strategy 只支持 ${[...AUTO_GROUP_TYPES].join('、')}`)
+    }
+  }
+  const testurl = options['testurl']
+  const testinterval = parseInt(options['testinterval'])
+  const tolerance = parseInt(options['tolerance'])
+
   const removed = new Set()
   const remapped = new Map()
   const ps = y.get('proxies')?.items || []
@@ -173,17 +196,27 @@ function cleanClash(clash, options = {}) {
           }
         }
         if (!removed.has('⚡ ‍低延迟')) {
-          const all = name_to_g['⚡ ‍低延迟'].get('proxies').items
+          const g = name_to_g['⚡ ‍低延迟']
+          const all = g.get('proxies').items
           for (const k of ['🇭🇰 ‍香港', '🇹🇼 ‍台湾', '🇸🇬 ‍新加坡', '🇯🇵 ‍日本', '🇺🇸 ‍美国', '🎏 ‍其他']) {
             if (!removed.has(k)) {
-              const t = name_to_g[k].get('proxies').items
+              const g2 = name_to_g[k]
+              const t = g2.get('proxies').items
               if (all.length === t.length) {
                 removed.add(k)
                 removed.add('👆🏻' + k)
+                g.get('interval').value = g2.get('interval').value
+                g.get('tolerance').value = g2.get('tolerance').value
                 rm = true
               }
               break
             }
+          }
+
+          if (gtype && gtype !== 'url-test') {
+            const newname = AUTO_GROUP_TYPE_TO_NAME[gtype]
+            g.set('name', newname)
+            name_to_g['✈️ ‍起飞'].get('proxies').items.find(name => name.value === '⚡ ‍低延迟').value = newname
           }
         }
         if (rm) {
@@ -226,6 +259,27 @@ function cleanClash(clash, options = {}) {
       }
       names.forEach((name, i) => (gs[i] = name_to_g[name]))
       gs.splice(names.length)
+    }
+    for (const g of gs) {
+      const type = g.get('type')
+      if (!AUTO_GROUP_TYPES.has(type.value)) continue
+      if (gtype) {
+        if (LOAD_BALANCE_STRATEGIES.has(gtype)) {
+          type.value = 'load-balance'
+          g.set('strategy', gtype)
+        } else {
+          type.value = gtype
+        }
+      }
+      if (testurl) {
+        g.set('url', testurl)
+      }
+      if (testinterval) {
+        g.set('interval', testinterval)
+      }
+      if (tolerance) {
+        g.set('tolerance', tolerance)
+      }
     }
   }
   if (!(ps.length && options['mannixConfig']) && removed.size) {
@@ -396,7 +450,10 @@ export default async (req, context) => {
         options['mannixConfig'] = true
       }
       if (url.searchParams.get('target') === 'clash') {
-        for (const k of ['type', 'type!', 'cipher', 'cipher!', 'sni', 'server']) {
+        for (const k of [
+          'type', 'type!', 'cipher', 'cipher!', 'sni', 'server',
+          'gtype', 'strategy', 'testurl', 'testinterval', 'tolerance',
+        ]) {
           options[k] = url.searchParams.get(k)
           url.searchParams.delete(k)
         }
