@@ -205,8 +205,8 @@ function cleanClash(clash, options = {}) {
               if (all.length === t.length) {
                 removed.add(k)
                 removed.add('👆🏻' + k)
-                g.get('interval').value = g2.get('interval').value
-                g.get('tolerance').value = g2.get('tolerance').value
+                g.set('interval', g2.get('interval'))
+                g.set('tolerance', g2.get('tolerance'))
                 rm = true
               }
               break
@@ -261,7 +261,7 @@ function cleanClash(clash, options = {}) {
       gs.splice(names.length)
     }
     for (const g of gs) {
-      const type = g.get('type')
+      const type = g.get('type', true)
       if (!AUTO_GROUP_TYPES.has(type.value)) continue
       if (gtype) {
         if (LOAD_BALANCE_STRATEGIES.has(gtype)) {
@@ -505,6 +505,7 @@ export default async (req, context) => {
       if (typeof data !== 'string') data = JSON.stringify(data)
       return new Response(data, { status, headers: pick(headers, 'content-type') })
     }
+    console.error(e)
     return new Response(String(e), { status: e instanceof SCError ? 400 : 500, headers: { 'content-type': 'text/plain;charset=utf-8' } })
   }
 }
