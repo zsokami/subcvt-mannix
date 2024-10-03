@@ -26,7 +26,7 @@ const SC_PARAM_KEYS = new Set([
 
 const AUTO_GROUP_TYPE_TO_NAME = {
   'url-test': '⚡ ‍低延迟',
-  'fallback': '✅ ‍自动切换',
+  'fallback': '✔️ ‍自动切换',
   'load-balance': '⚖️ ‍负载均衡',
   'consistent-hashing': '⚖️ ‍负载均衡',
   'round-robin': '🔃 ‍循环',

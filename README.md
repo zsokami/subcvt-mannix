@@ -25,7 +25,7 @@
   - `server={sni1}@{server1},{sni2}@{server2}|{server3},{server4}` 不同 sni 设置不同 server（sni 使用部分匹配的正则表达式）
 - 支持修改自动组策略：
   - `gtype=url-test` ⚡ ‍低延迟，优先选择低延迟节点
-  - `gtype=fallback` ✅ ‍自动切换，选择第一个能用的节点
+  - `gtype=fallback` ✔️ ‍自动切换，选择第一个能用的节点
   - `gtype=load-balance` ⚖️ ‍负载均衡，按域名哈希选择节点，同域请求分配给同一节点
   - `gtype=round-robin` 🔃 ‍循环，每次请求按顺序选择下一个能用的节点，到最后再回到第一个节点循环往复
   - `gtype=sticky-sessions` 🥂 ‍黏性会话，10 分钟内同域请求分配给同一节点
