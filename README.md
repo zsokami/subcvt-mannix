@@ -36,23 +36,23 @@
 
 默认 /sub 路径，默认转为 clash 订阅
 
-- `https://scmx.cc/?url={原订阅链接}`（随机后端 + 默认配置 + 默认参数）
-- `https://scmx.cc/api.v1.mk?url={原订阅链接}`（指定后端）
-- `https://scmx.cc/version`（指定路径）
-- `https://scmx.cc/api.v1.mk/version`（指定后端和路径）
+- `https://sc.mnnx.cc/?url={原订阅链接}`（随机后端 + 默认配置 + 默认参数）
+- `https://sc.mnnx.cc/api.v1.mk?url={原订阅链接}`（指定后端）
+- `https://sc.mnnx.cc/version`（指定路径）
+- `https://sc.mnnx.cc/api.v1.mk/version`（指定后端和路径）
 
 url 参数快捷方式
 
-- `https://scmx.cc/{原订阅链接}`
-- `https://scmx.cc/{后端地址}/{原订阅链接}`（原订阅链接需 URL 编码）
-- ~~`https://scmx.cc/?{原订阅链接}`~~（原订阅链接无需 URL 编码，但如果存在 # 字符则必须编码，否则会被截断）
-- ~~`https://scmx.cc?config={远程配置}&{原订阅链接}`~~（同上）
+- `https://sc.mnnx.cc/{原订阅链接}`
+- `https://sc.mnnx.cc/{后端地址}/{原订阅链接}`（原订阅链接需 URL 编码）
+- ~~`https://sc.mnnx.cc/?{原订阅链接}`~~（原订阅链接无需 URL 编码，但如果存在 # 字符则必须编码，否则会被截断）
+- ~~`https://sc.mnnx.cc?config={远程配置}&{原订阅链接}`~~（同上）
 
 github raw url 快捷方式
 
-`https://scmx.cc/r/{owner}/{repo}/{ref}/{path}` -> `https://scmx.cc/?url=https://raw.githubusercontent.com/{owner}/{repo}/{ref}/{path}`
+`https://sc.mnnx.cc/r/{owner}/{repo}/{ref}/{path}` -> `https://sc.mnnx.cc/?url=https://raw.githubusercontent.com/{owner}/{repo}/{ref}/{path}`
 
 其他用法与 https://github.com/tindy2013/subconverter/blob/master/README-cn.md 相同，如：
 
-- `https://scmx.cc/?config={远程配置}&url={原订阅链接}`（指定配置）
-- `https://scmx.cc/?target=mixed&url={原订阅链接}`（指定目标类型）
+- `https://sc.mnnx.cc/?config={远程配置}&url={原订阅链接}`（指定配置）
+- `https://sc.mnnx.cc/?target=mixed&url={原订阅链接}`（指定目标类型）
