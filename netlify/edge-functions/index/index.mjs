@@ -113,12 +113,15 @@ function cleanClash(clash, options = {}) {
       }
       switch (type) {
         case 'ss':
-          if (sni && (v = p.get('plugin-opts'))) {
+          if ((v = p.get('plugin-opts'))) {
             handleSNI(v, 'host', sni)
+            ensureString(v, 'password')
           }
+          ensureString(p, 'password')
           break
         case 'ssr':
           handleSNI(p, 'obfs-param', sni)
+          ensureString(p, 'password')
           break
         case 'vmess':
         case 'vless':
@@ -126,14 +129,31 @@ function cleanClash(clash, options = {}) {
           if ((v = p.get('network')) === 'h2' || v === 'grpc') {
             p.set('tls', true)
           }
+          if ((v = p.get('reality-opts'))) {
+            ensureString(v, 'short-id')
+          }
           break
         case 'trojan':
           handleSNIAndHost(y, p, 'sni', sni)
+          ensureString(p, 'password')
+          if ((v = p.get('ss-opts'))) {
+            ensureString(v, 'password')
+          }
+          if ((v = p.get('reality-opts'))) {
+            ensureString(v, 'short-id')
+          }
           break
         case 'hysteria':
+          handleSNI(p, 'sni', sni)
+          ensureString(p, 'auth-str')
+          break
         case 'hysteria2':
           handleSNI(p, 'sni', sni)
+          ensureString(p, 'password')
+          ensureString(p, 'obfs-password')
           break
+        default:
+          ensureString(p, 'password')
       }
       let grpc_service_name
       if (!localhost && (grpc_service_name = p.getIn(['grpc-opts', 'grpc-service-name'], true)) !== undefined) {
@@ -394,6 +414,14 @@ function handleSNIAndHost(y, p, sniKey, sni) {
         p.set(sniKey, sni)
       }
     }
+  }
+}
+
+function ensureString(map, key) {
+  const node = map.get(key, true)
+  if (node && node.source !== undefined && typeof node.value !== 'string') {
+    node.value = node.source
+    delete node.format
   }
 }
 
