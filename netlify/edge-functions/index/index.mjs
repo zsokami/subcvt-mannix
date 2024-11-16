@@ -22,6 +22,7 @@ const SC_PARAM_KEYS = new Set([
   'scv', 'fdn', 'expand', 'append_info', 'prepend', 'classic', 'tls13', 'profile_data',
   'type', 'type!', 'cipher', 'cipher!', 'sni', 'server',
   'gtype', 'strategy', 'testurl', 'testinterval', 'tolerance',
+  'up', 'down',
 ])
 
 const AUTO_GROUP_TYPE_TO_NAME = {
@@ -88,6 +89,9 @@ function cleanClash(clash, options = {}) {
   const testinterval = parseInt(options['testinterval'])
   const tolerance = !gtype || gtype === 'url-test' ? parseInt(options['tolerance']) : NaN
 
+  const up = parseInt(options['up']) === 0 ? 0 : options['up']
+  const down = parseInt(options['down']) === 0 ? 0 : options['down']
+
   const removed = new Set()
   const remapped = new Map()
   const ps = y.get('proxies')?.items || []
@@ -146,11 +150,31 @@ function cleanClash(clash, options = {}) {
         case 'hysteria':
           handleSNI(p, 'sni', sni)
           ensureString(p, 'auth-str')
+          if (up) {
+            p.set('up', up)
+          }
+          if (down) {
+            p.set('down', down)
+          }
           break
         case 'hysteria2':
           handleSNI(p, 'sni', sni)
           ensureString(p, 'password')
           ensureString(p, 'obfs-password')
+          if (up !== null) {
+            if (up === 0) {
+              p.delete('up')
+            } else {
+              p.set('up', up)
+            }
+          }
+          if (down !== null) {
+            if (down === 0) {
+              p.delete('down')
+            } else {
+              p.set('down', down)
+            }
+          }
           break
         default:
           ensureString(p, 'password')
@@ -485,6 +509,7 @@ export default async (req, context) => {
         for (const k of [
           'type', 'type!', 'cipher', 'cipher!', 'sni', 'server',
           'gtype', 'strategy', 'testurl', 'testinterval', 'tolerance',
+          'up', 'down',
         ]) {
           options[k] = url.searchParams.get(k)
           url.searchParams.delete(k)

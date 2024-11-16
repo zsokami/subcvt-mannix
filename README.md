@@ -33,6 +33,11 @@
   - `testurl=...` 延迟/可用性测试链接
   - `testinterval=...` 测试的间隔时间（秒）
   - `tolerance=...` `url-test` 的节点切换容差（毫秒），当前节点和最低延迟节点相差超过该值时将触发切换
+- 支持修改 up/down:
+  - `up=30` 修改 hysteria / hysteria2 的 up 参数为 30(Mbps)
+  - `up=0` 删除 hysteria2 的 up 参数 (转为 BBR 拥塞控制算法)
+  - `down=200` 修改 hysteria / hysteria2 的 down 参数为 200(Mbps)
+  - `down=0` 删除 hysteria2 的 down 参数 (转为 BBR 拥塞控制算法)
 
 默认 /sub 路径，默认转为 clash 订阅
 
