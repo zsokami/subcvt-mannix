@@ -502,7 +502,7 @@ export default async (req, context) => {
       for (const [k, v] of DEFAULT_SEARCH_PARAMS) {
         if (!url.searchParams.get(k)) url.searchParams.set(k, await v())
       }
-      if (/^https?:\/\/raw\.githubusercontent\.com\/zsokami\/ACL4SSR\/.*\/ACL4SSR_Online_(?:Full_)?Mannix\.ini/.test(url.searchParams.get('config'))) {
+      if (/^https?:\/\/raw\.githubusercontent\.com\/zsokami\/ACL4SSR\/.*\/ACL4SSR_Online_(?:Full_)?Mannix(?:_No_DNS_Leak)?\.ini/.test(url.searchParams.get('config'))) {
         options['mannixConfig'] = true
       }
       if (url.searchParams.get('target') === 'clash') {
