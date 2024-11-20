@@ -109,6 +109,8 @@ function cleanClash(clash, options = {}) {
         && (!re_cipher_not || !re_cipher_not.test(cipher))
       ))
     ) {
+      ensureString(p, 'name')
+      ensureString(p, 'server')
       let v
       const sni = findSNIByServer(server_sni_pairs, p)
       const server = findServerBySNI(sni_server_pairs, p)
