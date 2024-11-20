@@ -192,21 +192,25 @@ function cleanClash(clash, options = {}) {
       }
       ps[i++] = p
     } else {
-      removed.add(p.get('name'))
+      removed.add(p.get('name', true).source)
     }
   }
   ps.splice(i)
   const gs = y.get('proxy-groups')?.items
   if (gs) {
-    const name_g_pairs = gs.map(g => [g.get('name'), g])
+    const name_g_pairs = gs.map(g => [ensureString(g, 'name').value, g])
     const name_to_g = Object.fromEntries(name_g_pairs)
     const names = name_g_pairs.map(([name]) => name)
     const vis = {}
     ;(function dfs (names) {
       let i = 0
       for (const name of names) {
-        const name_v = name.value ?? name
+        const name_v = name.source ?? name
         if (removed.has(name_v)) continue
+        if (name.source !== undefined && typeof name.value !== 'string') {
+          name.value = name.source
+          delete name.format
+        }
         const g = name_to_g[name_v]
         if (g !== undefined) {
           if (!(name_v in vis)) {
@@ -449,6 +453,7 @@ function ensureString(map, key) {
     node.value = node.source
     delete node.format
   }
+  return node
 }
 
 export default async (req, context) => {
