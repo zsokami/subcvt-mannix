@@ -162,7 +162,14 @@ function cleanClash(clash, options = {}) {
         case 'hysteria2':
           handleSNI(p, 'sni', sni)
           ensureString(p, 'password')
-          ensureString(p, 'obfs-password')
+          v = p.get('obfs')
+          if (v) {
+            if (v === 'none') {
+              p.delete('obfs')
+            } else {
+              ensureString(p, 'obfs-password')
+            }
+          }
           if (up !== null) {
             if (up === 0) {
               p.delete('up')
