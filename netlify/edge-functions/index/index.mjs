@@ -536,6 +536,8 @@ export default async (req, context) => {
           url.searchParams.set('filename', m[1] === m[2] ? m[1] : m[1] + ' - ' + urlDecode(m[2]))
         } else if (m = suburl.match(/^(https?:\/\/raw\.githubusercontent\.com\/+([^/|]+))(?:\/+[^/|]+){3,}(?:\|+\1(?:\/+[^/|]+){3,})*$/)) {
           url.searchParams.set('filename', m[2])
+        } else if (m = suburl.match(/^(https?:\/\/gist\.githubusercontent\.com\/+([^/|]+))\/[^|]+(?:\|+\1\/[^|]+)*$/)) {
+          url.searchParams.set('filename', m[2] + ' - gist')
         } else if (m = suburl.match(/^(https?:\/\/([^:/?#|]+))(?:[:/?#][^|]*)?(?:\|+\1(?:[:/?#][^|]*)?)*$/)) {
           url.searchParams.set('filename', domainToUnicode(m[2]))
         }
