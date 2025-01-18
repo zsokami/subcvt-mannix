@@ -3,7 +3,7 @@ import { domainToUnicode } from 'url'
 import axios from 'axios'
 import YAML from 'yaml'
 
-import { getRawURL } from './github-api.mjs'
+import { StoreWithRedis } from './store-with-redis.ts'
 import { urlDecode, pick } from './utils.ts'
 
 const SUBCONVERTERS = []
@@ -12,7 +12,9 @@ const DEFAULT_SEARCH_PARAMS = [
   ['target', () => 'clash'],
   ['udp', () => 'true'],
   ['scv', () => 'true'],
-  ['config', () => getRawURL('zsokami/ACL4SSR', 'ACL4SSR_Online_Full_Mannix.ini')],
+  ['config', async () => `https://raw.githubusercontent.com/zsokami/ACL4SSR/${
+    await new StoreWithRedis('arx').get('sha')
+  }/ACL4SSR_Online_Full_Mannix.ini`],
 ]
 
 const SC_PARAM_KEYS = new Set([
@@ -465,8 +467,15 @@ function ensureString(map, key) {
 
 export default async (req, context) => {
   try {
-    const startTime = Date.now()
     const url = new URL(req.url)
+    if (url.pathname === '/sha') {
+      if (url.searchParams.get('token') !== Deno.env.get('TOKEN')) {
+        return new Response('Unauthorized', { status: 401 })
+      }
+      await new StoreWithRedis('arx').set('sha', url.searchParams.get('value'))
+      return new Response('OK')
+    }
+    const startTime = Date.now()
     url.search = url.searchParams
     const originalHost = url.host
     let suburlmatch = url.search.match(/[?&][^&=]*(:|%3A)/i)
